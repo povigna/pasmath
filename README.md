@@ -2,48 +2,31 @@
 
 **pasmath.pas**
 
-**Version:** 0.06a (Alpha)
+**Version:** 0.2
 
-**Author:** Michele Povigna
+**Author:** Michele Povigna, Carmelo Spiccia
 
-**Date:** code first posted on *it.comp.lang.pascal* on Dec 26, 2001.
+**Date:** code first posted on *it.comp.lang.pascal* on Dec 30, 2001.
 
 ## Overview
-PASMath is an alpha version of a mathematical expression evaluator designed to numerically evaluate expressions and display the step-by-step calculations. The current version (0.06a) is the first "public" release, featuring basic functionality for addition and subtraction. The interface is minimal, represented by a prompt 'Pas>'.
+PASMath, version 0.2, is a mathematical expression evaluator designed for basic arithmetic operations. This program is distributed under the terms of the GPL (Gnu Public License), copyright (C) 2001 Michele Povigna, Carmelo Spiccia, with ABSOLUTELY NO WARRANTY.
 
 ## Features
-- Supports basic arithmetic operations: addition and subtraction.
+- Supports basic arithmetic operations: addition, subtraction, multiplication, division, and exponentiation.
 - Numerically evaluates expressions and displays intermediate steps.
-- Inspired by the UMS - Universal Math Solver (at https://universalmathsolver.com/) but aims to provide an open source alternative.
-- Future plans include expanding functionality to support more operations and parentheses.
+- Brackets () are unsupported in the current version.
+- Write 'QUIT' to exit the program.
 
 ## Known Issues
-- Limited functionality in the alpha version.
-- Interface is rudimentary with only a prompt.
-- Some issues may be attributed to either the code or the compiler (currently using TP 7.0).
-
-## Example Output
-```
-Pas> 37+4+9+-12-5+27-5+22+12-59
-37+4+9+-12-5+27-5+22+12-59
-41+9+-12-5+27-5+22+12-59
-50+-12-5+27-5+22+12-59
-50-12-5+27-5+22+12-59
-38-5+27-5+22+12-59
-33+27-5+22+12-59
-60-5+22+12-59
-55+22+12-59
-77+12-59
-89-59
-30
-```
+- Limited support for parentheses in the current version.
 
 ## License
-This software is free and comes with ABSOLUTELY NO WARRANTY.
+This program is distributed under the terms of the GPL - Gnu Public License. Copyright (C) 2001 Michele Povigna, Carmelo Spiccia. This program comes with ABSOLUTELY NO WARRANTY.
 
 ## Notes
-- The source code is approximately sixty lines, though it may appear convoluted.
-- The parser implementation is a work in progress and may have deficiencies.
-- Current focus on implementing additional operations and parentheses.
+- The source code is provided under the GPL license.
+- The program supports basic arithmetic operations and exponentiation.
+- Brackets are unsupported in the current version.
+- The program includes a 'QUIT' command to exit.
 
 Feel free to explore the source code and provide feedback. Contributions are welcome!
