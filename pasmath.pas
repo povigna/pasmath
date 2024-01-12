@@ -8,6 +8,7 @@ Uses Crt;
 Const Cifre=['0'..'9','.'];
 Cifre2=['0'..'9'];
 Operators=['^','*','/','+','-'];
+Brackets=['(',')'];
 Operators2: Array[1..5] Of Char = ('^','*','/','+','-');
 Colors: Array[1..5] Of Byte = (2,9,7,7,5);
 Var Expr: String;
@@ -47,7 +48,7 @@ End;
 End;
 
 Function ExprOK(Expr: String): Boolean;
-Var I,I2: Integer;
+Var I,I2,BrCount1,BrCount2: Integer;
 Res: Boolean;
 Begin
 ExprOK:=False;
@@ -56,9 +57,10 @@ If (Length(Expr)=1) And (Expr[1] In Operators) Then Exit;
 If Expr[1] In (Operators-['+','-']) Then Exit;
 If Expr[Length(Expr)]='.' Then Exit;
 Res:=True;
+BrCount1:=0; BrCount2:=0;
 For I:=1 To Length(Expr) Do
 Begin
-If Not (Expr[I] In (Operators+Cifre)) Then
+If Not (Expr[I] In (Operators+Cifre+Brackets)) Then
 Begin
 Res:=False;
 Break;
@@ -69,8 +71,24 @@ Begin
 Res:=False;
 Break;
 End;
+If Expr[I]='(' Then BrCount1:=BrCount1+1;
+If Expr[I]=')' Then
+Begin
+BrCount2:=BrCount2+1;
+If BrCount1<BrCount2 Then
+Begin
+Res:=False;
+Break;
 End;
-If Not Res Then Exit;
+If I>1 Then
+If Expr[I-1] In (Operators+['.','(']) Then
+Begin
+Res:=False;
+Break;
+End;
+End;
+End;
+If (Not Res) Or (BrCount1<>BrCount2) Then Exit;
 For I:=1 To 3 Do
 For I2:=1 To 3 Do
 If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
@@ -81,13 +99,14 @@ If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
 ExprOK:=Res;
 End;
 
-Function Solve_exp(Var Expr: String): Boolean;
-Var ReString,ExprLeft,ExprRight,Token1,Token2: String;
+Function Solve_Exp(Var Express: String): Boolean;
+Var Expr,ReString,ExprLeft,ExprRight,Token1,Token2: String;
 I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos2: Integer;
 Result,Num1,Num2: Extended;
 Operator: Char;
 Prec: Byte;
 Begin
+Expr:=Express;
 ExprLeft:=''; ExprRight:=''; ReString:=''; Token1:='';
 Token2:=''; Operator:=#0; TokSign1:=1; TokSign2:=1;
 For I:=1 To 5 Do
@@ -168,17 +187,44 @@ Str(Result:0:Prec,ReString);
 If (ExprLeft<>'') And (Result>=0) Then
 If Not (ExprLeft[Length(ExprLeft)] In Operators) Then
 ExprLeft:=ExprLeft+'+';
-Expr:=ExprLeft+ReString+ExprRight;
+Express:=ExprLeft+ReString+ExprRight;
 Solve_Exp:=True;
+End;
+
+Procedure Solve_Brackets(Expr: String);
+Var ReString,SubExpr,ExprLeft,ExprRight: String;
+I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos2: Integer;
+Result,Num1,Num2: Extended;
+Operator: Char;
+Prec: Byte;
+Begin
+ExprLeft:=''; ExprRight:=''; ReString:='';
+Operator:=#0; TokSign1:=1; TokSign2:=1;
+Writeln(Expr);
+Repeat
+Pos1:=Pos(')',Expr);
+If Pos1<>0 Then
+Begin
+For Pos2:=Pos1-1 DownTo 1 Do
+If Expr[Pos2]='(' Then Break;
+SubExpr:=Copy(Expr,Pos2+1,Pos1-Pos2-1);
+TextColor(Colors[4]);
+While Solve_Exp(SubExpr) Do
+Writeln(Copy(Expr,1,Pos2),SubExpr,Copy(Expr,Pos1,Length(Expr)));
+Expr:=Copy(Expr,1,Pos2-1)+SubExpr+Copy(Expr,Pos1+1,Length(Expr));
+End;
+Until Pos1=0;
+TextColor(Colors[4]);
+While Solve_Exp(Expr) Do Writeln(Expr);
 End;
 
 BEGIN
 Clrscr;
 TextColor(Colors[1]);
-Writeln('PAS Math, version 0.22');
+Writeln('PAS Math, version 0.24 alpha 1');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
-Writeln('Brackets () unsupported. Write QUIT to exit.');
+Writeln('Brackets () supported. Write QUIT to exit.');
 Window(1,6,80,25);
 Repeat
 TextColor(Colors[2]);
@@ -187,12 +233,7 @@ TextColor(Colors[3]);
 Readln(Expr);
 If StrUpper(Expr)='QUIT' Then Break;
 DelSpace(Expr);
-If ExprOK(Expr) Then
-Begin
-TextColor(Colors[4]);
-Writeln(Expr);
-While Solve_exp(Expr) Do Writeln(Expr);
-End
+If ExprOK(Expr) Then Solve_Brackets(Expr)
 Else
 If Expr<>'' Then
 Begin
