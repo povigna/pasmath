@@ -8,6 +8,7 @@ Uses Crt;
 Const Cifre=['0'..'9','.'];
 Cifre2=['0'..'9'];
 Operators=['^','*','/','+','-'];
+Operators2: Array[1..5] Of Char = ('^','*','/','+','-');
 Var Expr,ExprLeft,ExprRight: String;
 
 Function Esp(Base,Esponente: Extended): Extended;
@@ -33,16 +34,25 @@ Str[I]:=UpCase(Str[I]);
 StrUpper:=Str;
 End;
 
+Procedure DelSpace(Var Str: String);
+Var P: Integer;
+Begin
+P:=Pos(#32,Str);
+While P<>0 Do
+Begin
+Delete(Str,P,1);
+P:=Pos(#32,Str);
+End;
+End;
+
 Function ExprOK(Expr: String): Boolean;
-Var I: Integer;
+Var I,I2: Integer;
 Res: Boolean;
 Begin
 Res:=True;
 If Expr='' Then Res:=False;
 If (Length(Expr)=1) And (Expr[1] In Operators) Then Res:=False;
-If Expr[1]='*' Then Res:=False;
-If Expr[1]='/' Then Res:=False;
-If Expr[1]='^' Then Res:=False;
+If Expr[1] In (Operators-['+','-']) Then Res:=False;
 If Expr[Length(Expr)]='.' Then Res:=False;
 For I:=1 To Length(Expr) Do
 Begin
@@ -58,19 +68,12 @@ Res:=False;
 Break;
 End;
 End;
-If Pos('**',Expr)<>0 Then Res:=False;
-If Pos('*/',Expr)<>0 Then Res:=False;
-If Pos('*^',Expr)<>0 Then Res:=False;
-If Pos('//',Expr)<>0 Then Res:=False;
-If Pos('/*',Expr)<>0 Then Res:=False;
-If Pos('/^',Expr)<>0 Then Res:=False;
-If Pos('^^',Expr)<>0 Then Res:=False;
-If Pos('^*',Expr)<>0 Then Res:=False;
-If Pos('^/',Expr)<>0 Then Res:=False;
-If Pos('++',Expr)<>0 Then Res:=False;
-If Pos('+-',Expr)<>0 Then Res:=False;
-If Pos('--',Expr)<>0 Then Res:=False;
-If Pos('-+',Expr)<>0 Then Res:=False;
+For I:=1 To 3 Do
+For I2:=1 To 3 Do
+If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
+For I:=4 To 5 Do
+For I2:=1 To 5 Do
+If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
 ExprOK:=Res;
 End;
 
@@ -85,13 +88,7 @@ ExprLeft:=''; ExprRight:=''; ReString:=''; Token1:='';
 Token2:=''; Operator:=#0; TokSign1:=1; TokSign2:=1;
 For I:=1 To 5 Do
 Begin
-Case I Of
-1: Pos1:=Pos('^',Expr);
-2: Pos1:=Pos('*',Expr);
-3: Pos1:=Pos('/',Expr);
-4: Pos1:=Pos('+',Expr);
-5: Pos1:=Pos('-',Expr);
-End;
+Pos1:=Pos(Operators2[I],Expr);
 If Pos1<>0 Then Break;
 End;
 If Pos1=0 Then Pos1:=1;
@@ -156,7 +153,7 @@ End;
 BEGIN
 Clrscr;
 TextColor(10);
-Writeln('PAS Math, version 0.2');
+Writeln('PAS Math, version 0.21');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
 Writeln('Brackets () unsupported. Write QUIT to exit.');
@@ -167,6 +164,7 @@ Write('PAS> ');
 TextColor(15);
 Readln(Expr);
 If StrUpper(Expr)='QUIT' Then Break;
+DelSpace(Expr);
 If ExprOK(Expr) Then
 Begin
 TextColor(14);
