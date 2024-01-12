@@ -1,7 +1,20 @@
-{This program is to be distributed under the terms of the GPL -
+{ This source is to be distributed under the terms of the GPL -
 Gnu Public License.
 Copyright (C) 2001 Michele Povigna, Carmelo Spiccia.
-This program came with ABSOLUTELY NO WARRANTY. }
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You can find a copy of this license at
+http://www.gnu.org/licenses/gpl.txt }
+
 {$N+,E+}
 Program PASmath;
 Uses Crt;
@@ -11,7 +24,7 @@ Operators=['^','*','/','+','-'];
 Brackets=['(',')'];
 Operators2: Array[1..5] Of Char = ('^','*','/','+','-');
 Colors: Array[1..5] Of Byte = (2,9,7,7,5);
-Var Expr: String;
+Var Expr,OldExpr,Err: String;
 
 Function Esp(Base,Esponente: Extended): Extended;
 Var Res: Extended;
@@ -99,20 +112,39 @@ If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
 ExprOK:=Res;
 End;
 
-Function Solve_Exp(Var Express: String): Boolean;
+Function Solve_Exp(Var Express,Error: String): Boolean;
 Var Expr,ReString,ExprLeft,ExprRight,Token1,Token2: String;
-I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos2: Integer;
+I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos1B,Pos2: Integer;
 Result,Num1,Num2: Extended;
 Operator: Char;
 Prec: Byte;
+ExpSign: Boolean;
 Begin
 Expr:=Express;
+Error:=''; ExpSign:=False;
 ExprLeft:=''; ExprRight:=''; ReString:=''; Token1:='';
 Token2:=''; Operator:=#0; TokSign1:=1; TokSign2:=1;
 For I:=1 To 5 Do
 Begin
 Pos1:=Pos(Operators2[I],Expr);
-If Pos1<>0 Then Break;
+If I=2 Then
+Begin
+Pos1B:=Pos(Operators2[3],Expr);
+If (Pos1B>0) And (Pos1B<Pos1) Then Pos1:=Pos1B;
+End;
+If Pos1<>0 Then
+Begin
+If (I=1) And (Expr[Pos1-1]=']') Then
+Begin
+For Pos1B:=Pos1-1 DownTo 1 Do
+If Expr[Pos1B]='[' Then Break;
+Delete(Expr,Pos1-1,1);
+Delete(Expr,Pos1B,2);
+Pos1:=Pos1-3;
+ExpSign:=True;
+End;
+Break;
+End;
 End;
 If Pos1=0 Then
 Begin
@@ -168,6 +200,7 @@ Break;
 End;
 Val(Token1,Num1,Err1);
 Val(Token2,Num2,Err2);
+If ExpSign Then TokSign1:=-1;
 Num1:=Num1*TokSign1;
 Num2:=Num2*TokSign2;
 Case Operator Of
@@ -178,8 +211,19 @@ End;
 '+': Result:=Num1+Num2;
 '-': Result:=Num1-Num2;
 '*': Result:=Num1*Num2;
-'/': If Num2<>0 Then Result:=Num1/Num2 Else Result:=0;
-'^': If Num2=Int(Num2) Then Result:=Esp(Num1,Num2)
+'/': If Num2<>0 Then Result:=Num1/Num2
+Else
+Begin
+Result:=0;
+Error:='Division by zero.';
+End;
+'^': If (Num1=0) And (Num2=0) Then
+Begin
+Result:=0;
+Error:='Founded 0^0.';
+End
+Else
+If Num2=Int(Num2) Then Result:=Esp(Num1,Num2)
 Else Result:=Exp(Num2*Ln(Num1));
 End;
 If Result=Int(Result) Then Prec:=0 Else Prec:=2;
@@ -209,19 +253,46 @@ For Pos2:=Pos1-1 DownTo 1 Do
 If Expr[Pos2]='(' Then Break;
 SubExpr:=Copy(Expr,Pos2+1,Pos1-Pos2-1);
 TextColor(Colors[4]);
-While Solve_Exp(SubExpr) Do
+While Solve_Exp(SubExpr,Err) Do
+Begin
+If Err<>'' Then
+Begin
+TextColor(Colors[5]);
+Writeln('Error: ',Err);
+Break;
+End;
+
 Writeln(Copy(Expr,1,Pos2),SubExpr,Copy(Expr,Pos1,Length(Expr)));
+End;
+If Pos1+1<=Length(Expr) Then
+If (Expr[Pos1+1]='^') And (SubExpr[1]='-') Then
+
+Expr:=Copy(Expr,1,Pos2-1)+'['+SubExpr+']'+Copy(Expr,Pos1+1,Length(Expr))
+Else
+
+Expr:=Copy(Expr,1,Pos2-1)+SubExpr+Copy(Expr,Pos1+1,Length(Expr))
+Else
+
 Expr:=Copy(Expr,1,Pos2-1)+SubExpr+Copy(Expr,Pos1+1,Length(Expr));
 End;
 Until Pos1=0;
 TextColor(Colors[4]);
-While Solve_Exp(Expr) Do Writeln(Expr);
+While Solve_Exp(Expr,Err) Do
+Begin
+If Err<>'' Then
+Begin
+TextColor(Colors[5]);
+Writeln('Error: ',Err);
+Break;
+End;
+Writeln(Expr);
+End;
 End;
 
 BEGIN
 Clrscr;
 TextColor(Colors[1]);
-Writeln('PAS Math, version 0.24 alpha 1');
+Writeln('PAS Math, version 0.25 beta');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
 Writeln('Brackets () supported. Write QUIT to exit.');
