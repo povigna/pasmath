@@ -9,7 +9,8 @@ Const Cifre=['0'..'9','.'];
 Cifre2=['0'..'9'];
 Operators=['^','*','/','+','-'];
 Operators2: Array[1..5] Of Char = ('^','*','/','+','-');
-Var Expr,ExprLeft,ExprRight: String;
+Colors: Array[1..5] Of Byte = (2,9,7,7,5);
+Var Expr: String;
 
 Function Esp(Base,Esponente: Extended): Extended;
 Var Res: Extended;
@@ -49,11 +50,12 @@ Function ExprOK(Expr: String): Boolean;
 Var I,I2: Integer;
 Res: Boolean;
 Begin
+ExprOK:=False;
+If Expr='' Then Exit;
+If (Length(Expr)=1) And (Expr[1] In Operators) Then Exit;
+If Expr[1] In (Operators-['+','-']) Then Exit;
+If Expr[Length(Expr)]='.' Then Exit;
 Res:=True;
-If Expr='' Then Res:=False;
-If (Length(Expr)=1) And (Expr[1] In Operators) Then Res:=False;
-If Expr[1] In (Operators-['+','-']) Then Res:=False;
-If Expr[Length(Expr)]='.' Then Res:=False;
 For I:=1 To Length(Expr) Do
 Begin
 If Not (Expr[I] In (Operators+Cifre)) Then
@@ -68,17 +70,19 @@ Res:=False;
 Break;
 End;
 End;
+If Not Res Then Exit;
 For I:=1 To 3 Do
 For I2:=1 To 3 Do
 If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
+If Not Res Then Exit;
 For I:=4 To 5 Do
 For I2:=1 To 5 Do
 If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
 ExprOK:=Res;
 End;
 
-Function Solve_exp(Expr: String): String;
-Var ReString,Token1,Token2: String;
+Function Solve_exp(Var Expr: String): Boolean;
+Var ReString,ExprLeft,ExprRight,Token1,Token2: String;
 I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos2: Integer;
 Result,Num1,Num2: Extended;
 Operator: Char;
@@ -91,7 +95,11 @@ Begin
 Pos1:=Pos(Operators2[I],Expr);
 If Pos1<>0 Then Break;
 End;
-If Pos1=0 Then Pos1:=1;
+If Pos1=0 Then
+Begin
+Solve_Exp:=False;
+Exit;
+End;
 If Pos1=1 Then Pos2:=1
 Else
 For I:=Pos1-1 DownTo 1 Do
@@ -107,6 +115,11 @@ Begin
 Delete(Expr,1,1);
 TokSign1:=-1;
 End;
+If Expr[Pos2]='+' Then
+Begin
+Delete(Expr,1,1);
+TokSign1:=1;
+End;
 For I:=Pos2 To Length(Expr) Do
 If Expr[I] In Cifre Then Token1:=Token1+Expr[I]
 Else
@@ -117,6 +130,11 @@ If Expr[I+1]='-' Then
 Begin
 Delete(Expr,I+1,1);
 TokSign2:=-1;
+End;
+If Expr[I+1]='+' Then
+Begin
+Delete(Expr,I+1,1);
+TokSign2:=1;
 End;
 For I2:=I+1 To Length(Expr) Do
 If Expr[I2] In Cifre Then Token2:=Token2+Expr[I2]
@@ -134,7 +152,10 @@ Val(Token2,Num2,Err2);
 Num1:=Num1*TokSign1;
 Num2:=Num2*TokSign2;
 Case Operator Of
-#0: Result:=Num1;
+#0: Begin
+Solve_Exp:=False;
+Exit;
+End;
 '+': Result:=Num1+Num2;
 '-': Result:=Num1-Num2;
 '*': Result:=Num1*Num2;
@@ -144,43 +165,38 @@ Else Result:=Exp(Num2*Ln(Num1));
 End;
 If Result=Int(Result) Then Prec:=0 Else Prec:=2;
 Str(Result:0:Prec,ReString);
-If (ExprLeft<>'') And (Result>0) Then
+If (ExprLeft<>'') And (Result>=0) Then
 If Not (ExprLeft[Length(ExprLeft)] In Operators) Then
 ExprLeft:=ExprLeft+'+';
-Solve_exp:=ExprLeft+ReString+ExprRight;
+Expr:=ExprLeft+ReString+ExprRight;
+Solve_Exp:=True;
 End;
 
 BEGIN
 Clrscr;
-TextColor(10);
-Writeln('PAS Math, version 0.21');
+TextColor(Colors[1]);
+Writeln('PAS Math, version 0.22');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
 Writeln('Brackets () unsupported. Write QUIT to exit.');
 Window(1,6,80,25);
 Repeat
-TextColor(9);
+TextColor(Colors[2]);
 Write('PAS> ');
-TextColor(15);
+TextColor(Colors[3]);
 Readln(Expr);
 If StrUpper(Expr)='QUIT' Then Break;
 DelSpace(Expr);
 If ExprOK(Expr) Then
 Begin
-TextColor(14);
+TextColor(Colors[4]);
 Writeln(Expr);
-Repeat
-If Expr<>Solve_exp(Expr) Then
-Begin
-Expr:=Solve_exp(Expr);
-Writeln(Expr);
-End;
-Until (ExprRight='') And (ExprLeft='');
+While Solve_exp(Expr) Do Writeln(Expr);
 End
 Else
 If Expr<>'' Then
 Begin
-TextColor(12);
+TextColor(Colors[5]);
 Writeln('This is not a valid expression.');
 End;
 Writeln;
