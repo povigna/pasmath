@@ -24,16 +24,24 @@ Uses Crt;
 Const Cifre=['0'..'9','.'];
 Cifre2=['0'..'9'];
 Operators=['^','*','/','+','-'];
-Brackets=['(',')','|','>'];
+Brackets=['(',')','|'];
 Operators2: Array[1..5] Of Char = ('^','*','/','+','-');
 Colors: Array[1..5] Of Byte = (2,9,7,7,5);
+DelTime: Integer = 0;
 Var Expr,Err: String;
 
-Function Factorial(X: Extended): Extended; Forward;
-
 Function Factorial(X: Extended): Extended;
+Var Result: Extended;
+I: Longint;
 Begin
-If X<=0 Then Factorial:=1 Else Factorial:=X*Factorial(X-1);
+If X<=1 Then Result:=1
+Else
+Begin
+Result:=X;
+For I:=1 To Round(X-1) Do
+Result:=Result*I;
+End;
+Factorial:=Result;
 End;
 
 Function Esp(Base,Esponente: Extended): Extended;
@@ -73,31 +81,104 @@ Str[I]:=UpCase(Str[I]);
 StrUpper:=Str;
 End;
 
-Function NoSpace(Str: String): String;
+Function NoSpace(Str: String; Kind: Byte): String;
 Var P: Integer;
 Begin
 P:=Pos(#32,Str);
+If Kind=1 Then
 While P>0 Do
 Begin
 Delete(Str,P,1);
 P:=Pos(#32,Str);
 End;
+If ((Kind Mod 2)=0) And (Str<>'') Then
+While Str[1]=#32 Do
+Begin
+Delete(Str,1,1);
+If Str='' Then Break
+End;
+If ((Kind Mod 3)=0) And (Str<>'') Then
+While Str[Length(Str)]=#32 Do
+Begin
+Delete(Str,Length(Str),1);
+If Str='' Then Break
+End;
 NoSpace:=Str;
+End;
+
+Function NoImpMul(Str: String): String;
+Var OldI,I,BrCount1,BrCount2: Integer;
+AbsKind: Boolean;
+VAbs: Array[0..100] Of Boolean;
+Begin
+BrCount1:=0; BrCount2:=0;
+For I:=0 To 100 Do VAbs[I]:=True;
+I:=0;
+While I<Length(Str) Do
+Begin
+I:=I+1;
+If Str[I]='(' Then BrCount1:=BrCount1+1;
+If Str[I]=')' Then BrCount2:=BrCount2+1;
+If BrCount2>BrCount1 Then Break;
+If Str[I]='|' Then
+Begin
+VAbs[BrCount1-BrCount2]:=Not VAbs[BrCount1-BrCount2];
+If Vabs[BrCount1-BrCount2] Then
+Begin
+If (I>0) And (I<Length(Str)) Then
+If Not(Str[I+1] In (Operators+[')','!'])) Then
+Str:=Copy(Str,1,I)+'*'+Copy(Str,I+1,Length(Str)-I);
+End
+Else
+If I>1 Then
+If Not(Str[I-1] In (Operators+['('])) Then
+Begin
+Str:=Copy(Str,1,I-1)+'*'+Copy(Str,I,Length(Str)-I+1);
+I:=I+1;
+End;
+End;
+End;
+I:=0;
+Repeat
+OldI:=I;
+I:=I+Pos(')',Copy(Str,I+1,Length(Str)));
+If (I>0) And (I<Length(Str)) Then
+If Not(Str[I+1] In (Operators+[')','|','!'])) Then
+Str:=Copy(Str,1,I)+'*'+Copy(Str,I+1,Length(Str)-I);
+Until OldI=I;
+I:=0;
+Repeat
+OldI:=I;
+I:=I+Pos('(',Copy(Str,I+1,Length(Str)));
+If I>1 Then
+If Not(Str[I-1] In (Operators+['(','|'])) Then
+Begin
+Str:=Copy(Str,1,I-1)+'*'+Copy(Str,I,Length(Str)-I+1);
+I:=I+1;
+End;
+Until OldI=I;
+I:=0;
+Repeat
+OldI:=I;
+I:=I+Pos('!',Copy(Str,I+1,Length(Str)));
+If (I>0) And (I<Length(Str)) Then
+If Not(Str[I+1] In (Operators+[')','|'])) Then
+Str:=Copy(Str,1,I)+'*'+Copy(Str,I+1,Length(Str)-I);
+Until OldI=I;
+NoImpMul:=Str;
 End;
 
 Function ExprOK(Expr: String): Boolean;
 Var I,I2,BrCount1,BrCount2: Integer;
-Res: Boolean;
+AlredyPoint,Res: Boolean;
 VAbs: Array[0..100] Of Boolean;
 Begin
-(* ExprOK:=True;
-Exit; *)
 ExprOK:=False;
 If Expr='' Then Exit;
 If (Length(Expr)=1) And (Expr[1] In Operators+['!']) Then Exit;
 If Expr[1] In (Operators-['+','-']+['!']) Then Exit;
-If Expr[Length(Expr)]='.' Then Exit;
-Res:=True;
+If Expr[Length(Expr)] In (Operators+['.']) Then Exit;
+Res:=True; AlredyPoint:=False;
 BrCount1:=0; BrCount2:=0;
 For I:=0 To 100 Do VAbs[I]:=True;
 For I:=1 To Length(Expr) Do
@@ -130,11 +211,15 @@ Begin
 Res:=False;
 Break;
 End;
+If Not (Expr[I] In Cifre) Then AlredyPoint:=False;
 If (Expr[I]='.') And (I<Length(Expr)) Then
-If Not(Expr[I+1] In Cifre2) Then
+Begin
+If (Not(Expr[I+1] In Cifre2)) Or AlredyPoint Then
 Begin
 Res:=False;
 Break;
+End;
+AlredyPoint:=True;
 End;
 If (Expr[I]='!') And (I>1) Then
 If Not(Expr[I-1] In (Cifre2+[')','|'])) Then
@@ -203,6 +288,13 @@ Token2:=''; Oper:=#0; TokSign1:=1; TokSign2:=1;
 Pos1:=Pos('!',Expr);
 If Pos1>0 Then
 Begin
+If Pos1>1 Then
+If (Expr[Pos1-1]=']') Then
+Begin
+Error:='Cannot calculate factorial.';
+Solve_Exp:=True;
+Exit;
+End;
 For Pos1B:=Pos1-1 DownTo 0 Do
 If Pos1B>0 Then
 If Not(Expr[Pos1B] In Cifre) Then Break;
@@ -224,6 +316,9 @@ Str(Result:0:Prec,ReString);
 If (ExprLeft<>'') And (Result>=0) Then
 If Not (ExprLeft[Length(ExprLeft)] In Operators) Then
 ExprLeft:=ExprLeft+'+';
+If (ExprRight<>'') And (Result>=0) Then
+If Not (ExprRight[1] In Operators) Then
+ExprRight:='*'+ExprRight;
 Express:=ExprLeft+ReString+ExprRight;
 Solve_Exp:=True;
 Exit;
@@ -337,6 +432,9 @@ Str(Result:0:Prec,ReString);
 If (ExprLeft<>'') And (Result>=0) Then
 If Not (ExprLeft[Length(ExprLeft)] In Operators) Then
 ExprLeft:=ExprLeft+'+';
+(* If (ExprRight<>'') And (Result>=0) Then
+If Not (ExprRight[1] In Operators) Then ExprRight:='*'+ExprRight;
+*)
 Express:=ExprLeft+ReString+ExprRight;
 Solve_Exp:=True;
 End;
@@ -379,7 +477,11 @@ TextColor(Colors[5]);
 Writeln('Error: ',Err);
 Break;
 End;
-If OldExpr<>'' Then Writeln(NoSquare(OldExpr));
+If OldExpr<>'' Then
+Begin
+Delay(DelTime);
+Writeln(NoSquare(OldExpr));
+End;
 
 OldExpr:=Copy(Expr,1,Pos2)+SubExpr+Copy(Expr,Pos1,Length(Expr));
 End;
@@ -387,10 +489,16 @@ If Err='' Then
 Begin
 ExprLeft:=Copy(Expr,1,Pos2-1);
 ExprRight:=Copy(Expr,Pos1+1,Length(Expr));
-If Pos1+1<=Length(Expr) Then
-If (Expr[Pos1+1]='^') And (SubExpr[1]='-') And Not Abs
-Then
+If Pos1<Length(Expr) Then
+If (Expr[Pos1+1] In ['^','!']) And (SubExpr[1]='-') And
+Not Abs Then
 SubExpr:='['+SubExpr+']';
+If ExprLeft<>'' Then
+If Not (ExprLeft[Length(ExprLeft)] In Operators+Brackets)
+Then ExprLeft:=ExprLeft+'*';
+If ExprRight<>'' Then
+If Not (ExprRight[1] In Operators+Brackets+['!']) Then
+ExprRight:='*'+ExprRight;
 If Abs And (SubExpr[1]='-') Then Delete(SubExpr,1,1);
 If (ExprLeft<>'') And (SubExpr[1]='-') Then
 Case ExprLeft[Length(ExprLeft)] Of
@@ -401,7 +509,12 @@ SubExpr[1]:='+';
 End;
 End;
 Expr:=ExprLeft+SubExpr+ExprRight;
+If Abs Or ( (OldExpr<>'') Or ( (Pos(')',Expr)=Pos('|',Expr))
+And (Pos('[',Expr)=0) ) ) Then
+Begin
+Delay(DelTime);
 Writeln(NoSquare(Expr));
+End;
 End;
 End;
 Until (Pos1=0) Or (Err<>'');
@@ -416,15 +529,87 @@ TextColor(Colors[5]);
 Writeln('Error: ',Err);
 Break;
 End;
+Delay(DelTime);
 Writeln(NoSquare(Expr));
 End;
 End;
 End;
 
+Function ExCommand(Str: String): Byte;
+Var TmpInt,ConvErr: Integer;
+Result: Byte;
+Begin
+Result:=0;
+Str:=NoSpace(StrUpper(Expr),6);
+If Str='QUIT' Then Result:=2;
+If Str='DELAY' Then
+Begin
+TextColor(Colors[5]);
+If DelTime=0 Then Writeln('Delay is OFF (',DelTime,' ms)')
+Else Writeln('Delay is ON (',DelTime,' ms)');
+Writeln;
+Result:=1;
+End;
+If Copy(Str,1,6)='DELAY ' Then
+Begin
+If NoSpace(Copy(Str,7,Length(Str)-6),6)='OFF' Then
+Begin
+DelTime:=0;
+TextColor(Colors[5]);
+Writeln('Delay is OFF (',DelTime,' ms)');
+Writeln;
+Result:=1;
+End;
+If NoSpace(Copy(Str,7,Length(Str)-6),6)='ON' Then
+Begin
+DelTime:=700;
+TextColor(Colors[5]);
+Writeln('Delay is ON (',DelTime,' ms)');
+Writeln;
+Result:=1;
+End;
+If Result=0 Then
+Begin
+Val(Copy(Str,7,Length(Str)-6),TmpInt,ConvErr);
+If TmpInt<0 Then ConvErr:=1;
+TextColor(Colors[5]);
+If ConVerr<>0 Then Writeln('Error: invalid argument for
+DELAY.')
+Else
+Begin
+DelTime:=TmpInt;
+If DelTime=0 Then Writeln('Delay is OFF (',DelTime,' ms)')
+Else Writeln('Delay is ON (',DelTime,' ms)');
+End;
+Writeln;
+Result:=1;
+End;
+End;
+If Str='CLS' Then
+Begin
+Clrscr;
+Result:=1;
+End;
+If Str='HELP' Then
+Begin
+TextColor(Colors[5]);
+Writeln('List of the commands: ');
+TextColor(Colors[3]);
+Writeln('CLS - Clear the screen.');
+Writeln('DELAY [ON | OFF | Number] - View / Change the delay
+state.');
+Writeln('HELP - Show this screen.');
+Writeln('QUIT - Exit the program.');
+Writeln;
+Result:=1;
+End;
+ExCommand:=Result;
+End;
+
 BEGIN
 Clrscr;
 TextColor(Colors[1]);
-Writeln('PAS Math, version 0.27 beta');
+Writeln('PAS Math, version 0.28 beta');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
 Writeln('Write QUIT to exit, HELP for more options.');
@@ -434,24 +619,11 @@ TextColor(Colors[2]);
 Write('PAS> ');
 TextColor(Colors[3]);
 Readln(Expr);
-If NoSpace(StrUpper(Expr))='QUIT' Then Break;
-If NoSpace(StrUpper(Expr))='CLS' Then
-Begin
-Clrscr;
-Continue;
+Case ExCommand(Expr) Of
+1: Continue;
+2: Exit;
 End;
-If NoSpace(StrUpper(Expr))='HELP' Then
-Begin
-TextColor(Colors[5]);
-Writeln('List of the commands: ');
-TextColor(Colors[3]);
-Writeln('CLS - Clear the screen.');
-Writeln('HELP - Show this screen.');
-Writeln('QUIT - Exit the program.');
-Writeln;
-Continue;
-End;
-Expr:=NoSpace(Expr);
+Expr:=NoImpMul(NoSpace(Expr,1));
 If ExprOK(Expr) Then Solve_Brackets(Expr)
 Else
 If Expr<>'' Then
