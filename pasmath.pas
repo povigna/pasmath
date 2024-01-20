@@ -21,8 +21,7 @@ http://www.gnu.org/licenses/gpl.txt }
 {$E+}
 Program PASmath;
 Uses Crt;
-Const HighPrecision=True;
-Cifre=['0'..'9','.'];
+Const Cifre=['0'..'9','.'];
 Cifre2=['0'..'9'];
 Operators=['^','*','/','+','-'];
 Brackets=['(',')','|'];
@@ -71,7 +70,8 @@ Writeln;
 End;
 
 Function Input(Var Stringa: String; X,Y,Max: Integer; Sfondo: Char;
-CaseUp,Num,Alf,Spc,Vir,Pto,Fct,Ope,Brk,Acc,All,Tab,Altri: Boolean): String;
+CaseUp,Num,Alf,Spc,Vir,Pto,Fct,Ope,Brk,Acc,All,Tab,Altri:
+Boolean): String;
 Var Car: Char;
 Ris: String;
 K,BrCount1,BrCount2: Integer;
@@ -108,21 +108,31 @@ If BrCount1>BrCount2 Then Textcolor(4);
 End;
 Case Car Of
 ^C: Halt; (*** Per emergenza ***)
-'0'..'9': If (Length(Stringa)<Max) And Num Then Begin Write(Car); Stringa:=Stringa+Car; End;
-'a'..'z','A'..'Z': If (Length(Stringa)<Max) And Alf Then Begin Write(Car); Stringa:=Stringa+Car; End;
-' ': If (Length(Stringa)<Max) And Spc Then Begin Write(Car); Stringa:=Stringa+Car; End;
-',': If (Length(Stringa)<Max) And Vir Then Begin Write(Car); Stringa:=Stringa+Car; End;
-'.': If (Length(Stringa)<Max) And Pto Then Begin Write(Car); Stringa:=Stringa+Car; End;
-'!': If (Length(Stringa)<Max) And Fct Then Begin Write(Car); Stringa:=Stringa+Car; End;
+'0'..'9': If (Length(Stringa)<Max) And Num Then Begin
+Write(Car); Stringa:=Stringa+Car; End;
+'a'..'z','A'..'Z': If (Length(Stringa)<Max) And Alf Then Begin
+Write(Car); Stringa:=Stringa+Car; End;
+' ': If (Length(Stringa)<Max) And Spc Then Begin Write(Car);
+Stringa:=Stringa+Car; End;
+',': If (Length(Stringa)<Max) And Vir Then Begin Write(Car);
+Stringa:=Stringa+Car; End;
+'.': If (Length(Stringa)<Max) And Pto Then Begin Write(Car);
+Stringa:=Stringa+Car; End;
+'!': If (Length(Stringa)<Max) And Fct Then Begin Write(Car);
+Stringa:=Stringa+Car; End;
 '^','*','/','+','-':
-If (Length(Stringa)<Max) And Ope Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And Ope Then Begin Write(Car);
+Stringa:=Stringa+Car; End;
 '(',')','|':
-If (Length(Stringa)<Max) And Brk Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And Brk Then Begin Write(Car);
+Stringa:=Stringa+Car; End;
 'Š','‚','•','…','—',' ':
-If (Length(Stringa)<Max) And Acc Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And Acc Then Begin Write(Car);
+Stringa:=Stringa+Car; End;
 '<','>',';',':','_','\','"','œ','$','%','&',
 '=','?','õ','ø','‡','#','@','[',']','''':
-If (Length(Stringa)<Max) And All Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And All Then Begin Write(Car); Str
+inga:=Stringa+Car; End;
 #9: If Tab Then Begin Ris:=Car; Break; End;
 #13,#27: Begin Ris:=Car; Break; End;
 #8: If Length(Stringa)>0 Then
@@ -194,94 +204,51 @@ If Esponente<0 Then Res:=1/Res;
 Esp:=Res;
 End;
 
-Function NoScientNot(St: String): String;
-Var P1,P2,I,Err2: Integer;
-SubSt,TmpSt: String;
-Num,Esp: Extended;
-Prec: Byte;
-Begin
-P1:=Pos('[$',St);
-P2:=Pos('$]',St);
-While (P1<>0) And (P2<>0) Do
-Begin
-Prec:=2;
-SubSt:=Copy(St,P1,P2-P1+2);
-Delete(SubSt,1,2);
-I:=Pos('$',SubSt);
-TmpSt:=Copy(SubSt,1,I-1);
-If TmpSt[1]='_' Then TmpSt[1]:='-';
-Delete(SubSt,1,I);
-If SubSt[1]='_' Then SubSt[1]:='-';
-Delete(SubSt,Length(SubSt)-1,2);
-Val(TmpSt,Num,Err2);
-Val(SubSt,Esp,Err2);
-If Esp=-1 Then
-Begin
-Num:=Num/10;
-Esp:=0;
-End;
-If Esp=-2 Then
-Begin
-Num:=Num/100;
-Esp:=0;
-Prec:=3;
-End;
-Str(Num:0:Prec,TmpSt);
-Str(Esp:0:0,SubSt);
-If Esp=0 Then SubSt:=TmpSt
-Else SubSt:='('+TmpSt+'*10^'+SubSt+')';
-St:=Copy(St,1,P1-1)+SubSt+Copy(St,P2+2,Length(St)-P2-1);
-P1:=Pos('[$',St);
-P2:=Pos('$]',St);
-End;
-NoScientNot:=St;
-End;
-
-Function NoSquare(St: String): String;
+Function NoSquare(Str: String): String;
 Var I: Integer;
 Begin
 Repeat
-I:=Pos('[',St);
-If I>0 Then St[I]:='(';
+I:=Pos('[',Str);
+If I>0 Then Str[I]:='(';
 Until I=0;
 Repeat
-I:=Pos(']',St);
-If I>0 Then St[I]:=')';
+I:=Pos(']',Str);
+If I>0 Then Str[I]:=')';
 Until I=0;
-NoSquare:=St;
+NoSquare:=Str;
 End;
 
-Function StrUpper(St: String): String;
+Function StrUpper(Str: String): String;
 Var I: Integer;
 Begin
-For I:=1 To Length(St) Do
-St[I]:=UpCase(St[I]);
-StrUpper:=St;
+For I:=1 To Length(Str) Do
+Str[I]:=UpCase(Str[I]);
+StrUpper:=Str;
 End;
 
-Function NoSpace(St: String; Kind: Byte): String;
+Function NoSpace(Str: String; Kind: Byte): String;
 Var P: Integer;
 Begin
-P:=Pos(#32,St);
+P:=Pos(#32,Str);
 If Kind=1 Then
 While P>0 Do
 Begin
-Delete(St,P,1);
-P:=Pos(#32,St);
+Delete(Str,P,1);
+P:=Pos(#32,Str);
 End;
-If ((Kind Mod 2)=0) And (St<>'') Then
-While St[1]=#32 Do
+If ((Kind Mod 2)=0) And (Str<>'') Then
+While Str[1]=#32 Do
 Begin
-Delete(St,1,1);
-If St='' Then Break
+Delete(Str,1,1);
+If Str='' Then Break
 End;
-If ((Kind Mod 3)=0) And (St<>'') Then
-While St[Length(St)]=#32 Do
+If ((Kind Mod 3)=0) And (Str<>'') Then
+While Str[Length(Str)]=#32 Do
 Begin
-Delete(St,Length(St),1);
-If St='' Then Break
+Delete(Str,Length(Str),1);
+If Str='' Then Break
 End;
-NoSpace:=St;
+NoSpace:=Str;
 End;
 
 Function ImpMul_Yes(Str: String): String;
@@ -431,7 +398,8 @@ Res:=False;
 Break;
 End;
 End;
-If Not VAbs[BrCount1-BrCount2] And ((Expr[I]=')') Or (I=Length(Expr))) Then
+If Not VAbs[BrCount1-BrCount2] And ((Expr[I]=')') Or
+(I=Length(Expr))) Then
 Begin
 Res:=False;
 Break;
@@ -504,9 +472,9 @@ ExprOK:=Res;
 End;
 
 Function Solve_Exp(Var Express,Error: String): Boolean;
-Var Expr,ReString,ExprLeft,ExprRight,Token1,Token2,TmpStr: String;
+Var Expr,ReString,ExprLeft,ExprRight,Token1,Token2: String;
 I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos1B,Pos2: Integer;
-Result,Num1,Num2,TmpNum: Extended;
+Result,Num1,Num2: Extended;
 Oper: Char;
 Prec: Byte;
 ExpSign: Boolean;
@@ -515,7 +483,6 @@ Expr:=Express;
 Error:=''; ExpSign:=False;
 ExprLeft:=''; ExprRight:=''; ReString:=''; Token1:='';
 Token2:=''; Oper:=#0; TokSign1:=1; TokSign2:=1;
-(* --- Factorial --- *)
 Pos1:=Pos('!',Expr);
 If Pos1>0 Then
 Begin
@@ -550,14 +517,15 @@ End;
 If Result=Int(Result) Then Prec:=0 Else Prec:=2;
 Str(Result:0:Prec,ReString);
 If (ExprLeft<>'') And (Result>=0) Then
-If Not (ExprLeft[Length(ExprLeft)] In Operators) Then ExprLeft:=ExprLeft+'+';
+If Not (ExprLeft[Length(ExprLeft)] In Operators) Then
+ExprLeft:=ExprLeft+'+';
 If (ExprRight<>'') And (Result>=0) Then
-If Not (ExprRight[1] In Operators) Then ExprRight:='*'+ExprRight;
+If Not (ExprRight[1] In Operators) Then
+ExprRight:='*'+ExprRight;
 Express:=ExprLeft+ReString+ExprRight;
 Solve_Exp:=True;
 Exit;
 End;
-(* --- Other Operators --- *)
 For I:=1 To 5 Do
 Begin
 Pos1:=Pos(Operators2[I],Expr);
@@ -569,7 +537,6 @@ End;
 If Pos1>0 Then
 Begin
 If (I=1) And (Expr[Pos1-1]=']') Then
-If Expr[Pos1-2]<>'$' Then
 Begin
 For Pos1B:=Pos1-1 DownTo 1 Do
 If Expr[Pos1B]='[' Then Break;
@@ -606,10 +573,8 @@ Begin
 Delete(Expr,1,1);
 TokSign1:=1;
 End;
-(* --- Tokens --- *)
 For I:=Pos2 To Length(Expr) Do
-If Not (Expr[I] In (Operators+Brackets+['!'])) Then
-Token1:=Token1+Expr[I]
+If Expr[I] In Cifre Then Token1:=Token1+Expr[I]
 Else
 If Expr[I] In Operators Then
 Begin
@@ -625,8 +590,7 @@ Delete(Expr,I+1,1);
 TokSign2:=1;
 End;
 For I2:=I+1 To Length(Expr) Do
-If Not (Expr[I2] In (Operators+Brackets+['!'])) Then
-Token2:=Token2+Expr[I2]
+If Expr[I2] In Cifre Then Token2:=Token2+Expr[I2]
 Else
 If (Expr[I2] In Operators) Or (I2=Length(Expr)) Then
 Begin
@@ -636,44 +600,11 @@ Break;
 End;
 Break;
 End;
-(* --- Result Evaluation --- *)
-If Token1[1]<>'[' Then
-Begin
 Val(Token1,Num1,Err1);
+Val(Token2,Num2,Err2);
 If ExpSign Then TokSign1:=-1;
 Num1:=Num1*TokSign1;
-End
-Else
-Begin
-Delete(Token1,1,2);
-I:=Pos('$',Token1);
-TmpStr:=Copy(Token1,1,I-1);
-If TmpStr[1]='_' Then TmpStr[1]:='-';
-Delete(Token1,1,I);
-If Token1[1]='_' Then Token1[1]:='-';
-Delete(Token1,Length(Token1)-1,2);
-Val(TmpStr,Num1,Err2);
-Val(Token1,TmpNum,Err2);
-Num1:=Num1*Exp(TmpNum*Ln(10));
-End;
-If Token2[1]<>'[' Then
-Begin
-Val(Token2,Num2,Err2);
 Num2:=Num2*TokSign2;
-End
-Else
-Begin
-Delete(Token2,1,2);
-I:=Pos('$',Token2);
-TmpStr:=Copy(Token2,1,I-1);
-If TmpStr[1]='_' Then TmpStr[1]:='-';
-Delete(Token2,1,I);
-If Token2[1]='_' Then Token2[1]:='-';
-Delete(Token2,Length(Token2)-1,2);
-Val(TmpStr,Num2,Err2);
-Val(Token2,TmpNum,Err2);
-Num2:=Num2*Exp(TmpNum*Ln(10));
-End;
 Case Oper Of
 #0: Begin
 If Num1=Int(Num1) Then Prec:=0 Else Prec:=2;
@@ -710,30 +641,19 @@ Error:='Cannot calculate exponential.';
 End
 Else Result:=-Exp(Num2*Ln(-Num1));
 End;
-If (Abs(Result)>=Exp(35*Ln(10)))
-Or ((Result<>Int(Result)) And HighPrecision) Then
+If Result>=Exp(36*Ln(10)) Then
 Begin
-Str(Result,ReString);
-ReString:=NoSpace(ReString,1);
-If ReString[1]='+' Then Delete(ReString,1,1)
-Else
-If ReString[1]='-' Then ReString[1]:='_';
-I:=Pos('E',ReString);
-TmpStr:=Copy(ReString,I+1,Length(ReString)-I)+'$]';
-If TmpStr[1]='+' Then Delete(TmpStr,1,1)
-Else
-If TmpStr[1]='-' Then TmpStr[1]:='_';
-ReString:=NoSpace('[$'+Copy(ReString,1,I-1)+'$'+TmpStr,1);
-End
-Else
-Begin
+Result:=0;
+Error:='Overflow';
+End;
 If Result=Int(Result) Then Prec:=0 Else Prec:=2;
 Str(Result:0:Prec,ReString);
-End;
 If (ExprLeft<>'') And (Result>=0) Then
-If Not (ExprLeft[Length(ExprLeft)] In Operators) Then ExprLeft:=ExprLeft+'+';
+If Not (ExprLeft[Length(ExprLeft)] In Operators) Then
+ExprLeft:=ExprLeft+'+';
 (* If (ExprRight<>'') And (Result>=0) Then
-If Not (ExprRight[1] In Operators) Then ExprRight:='*'+ExprRight; *)
+If Not (ExprRight[1] In Operators) Then ExprRight:='*'+ExprRight;
+*)
 Express:=ExprLeft+ReString+ExprRight;
 Solve_Exp:=True;
 End;
@@ -778,8 +698,9 @@ End;
 If OldExpr<>'' Then
 Begin
 Delay(DelTime);
-WritelnExpr(NoSquare(NoScientNot(OldExpr)));
+WritelnExpr(NoSquare(OldExpr));
 End;
+
 OldExpr:=Copy(Expr,1,Pos2)+SubExpr+Copy(Expr,Pos1,Length(Expr));
 End;
 If Err='' Then
@@ -787,12 +708,15 @@ Begin
 ExprLeft:=Copy(Expr,1,Pos2-1);
 ExprRight:=Copy(Expr,Pos1+1,Length(Expr));
 If Pos1<Length(Expr) Then
-If (Expr[Pos1+1] In ['^','!']) And (SubExpr[1]='-') And Not Abs Then
+If (Expr[Pos1+1] In ['^','!']) And (SubExpr[1]='-') And
+Not Abs Then
 SubExpr:='['+SubExpr+']';
 If ExprLeft<>'' Then
-If Not (ExprLeft[Length(ExprLeft)] In Operators+Brackets) Then ExprLeft:=ExprLeft+'*';
+If Not (ExprLeft[Length(ExprLeft)] In Operators+Brackets)
+Then ExprLeft:=ExprLeft+'*';
 If ExprRight<>'' Then
-If Not (ExprRight[1] In Operators+Brackets+['!']) Then ExprRight:='*'+ExprRight;
+If Not (ExprRight[1] In Operators+Brackets+['!']) Then
+ExprRight:='*'+ExprRight;
 If Abs And (SubExpr[1]='-') Then Delete(SubExpr,1,1);
 If (ExprLeft<>'') And (SubExpr[1]='-') Then
 Case ExprLeft[Length(ExprLeft)] Of
@@ -807,7 +731,7 @@ If Abs Or ( (OldExpr<>'') Or ( (Pos(')',Expr)=Pos('|',Expr))
 And (Pos('[',Expr)=0) ) ) Then
 Begin
 Delay(DelTime);
-WritelnExpr(NoSquare(NoScientNot(Expr)));
+WritelnExpr(NoSquare(Expr));
 End;
 End;
 End;
@@ -823,7 +747,7 @@ Writeln('Error: ',Err);
 Break;
 End;
 Delay(DelTime);
-WritelnExpr(NoSquare(NoScientNot(Expr)));
+WritelnExpr(NoSquare(Expr));
 End;
 End;
 End;
@@ -900,12 +824,15 @@ Begin
 Val(Copy(Str,7,Length(Str)-6),TmpInt,ConvErr);
 If TmpInt<0 Then ConvErr:=1;
 TextColor(Colors[4]);
-If ConVerr<>0 Then Writeln('Error: Invalid argument for DELAY.')
+If ConVerr<>0 Then Writeln('Error: Invalid argument for
+DELAY.')
 Else
 Begin
 DelTime:=TmpInt;
-If DelTime=0 Then Writeln('Delay is OFF (',DelTime,' ms).')
-Else Writeln('Delay is ON (',DelTime,' ms).');
+If DelTime=0 Then Writeln('Delay is OFF (',DelTime,'
+ms).')
+Else Writeln('Delay is ON (',DelTime,'
+ms).');
 End;
 Writeln;
 Result:=1;
@@ -922,8 +849,10 @@ TextColor(Colors[4]);
 Writeln('List of the commands: ');
 TextColor(Colors[3]);
 Writeln('CLS - Clear the screen.');
-Writeln('COLOR [ON | OFF] - View / Change expression colors state.');
-Writeln('DELAY [ON | OFF | Number] - View / Change the delay state.');
+Writeln('COLOR [ON | OFF] - View / Change expression
+colors state.');
+Writeln('DELAY [ON | OFF | Number] - View / Change the delay
+state.');
 Writeln('HELP - Show this screen.');
 Writeln('QUIT - Exit the program.');
 Writeln;
@@ -935,7 +864,7 @@ End;
 BEGIN
 Clrscr;
 TextColor(Colors[1]);
-Writeln('PAS Math, version 0.29 alpha');
+Writeln('PAS Math, version 0.281 alpha');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
 Writeln('Write QUIT to exit, HELP for more options.');
@@ -948,8 +877,10 @@ Write('PAS> ');
 Expr:='';
 WX:=WhereX; WY:=WhereY;
 VPos:=VLength;
-Repeat (* CaseUp, Num, Alf, Spc, Vir, Pto, Fct, Ope, Brk, Acc, All, Tab,Altri *)
-InpCar:=Input(Expr,WX,WY,255,' ',False,True,True,True,True,True,True,True,True,True,False,False,True);
+Repeat (* CaseUp, Num, Alf, Spc, Vir, Pto,
+Fct, Ope, Brk, Acc, All, Tab,Altri *)
+InpCar:=Input(Expr,WX,WY,255,'
+',False,True,True,True,True,True,True,True,True,True,False,False,True);
 If InpCar=#27 Then Expr:='';
 If InpCar='Up' Then
 Begin
