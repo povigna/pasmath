@@ -17,13 +17,14 @@ for more details.
 You can find a copy of this license at
 http://www.gnu.org/licenses/gpl.txt }
 
-{$N+,E+}
+{$N+}
+{$E+}
 Program PASmath;
 Uses Crt;
 Const Cifre=['0'..'9','.'];
 Cifre2=['0'..'9'];
 Operators=['^','*','/','+','-'];
-Brackets=['(',')'];
+Brackets=['(',')','|','>'];
 Operators2: Array[1..5] Of Char = ('^','*','/','+','-');
 Colors: Array[1..5] Of Byte = (2,9,7,7,5);
 Var Expr,Err: String;
@@ -72,7 +73,7 @@ Str[I]:=UpCase(Str[I]);
 StrUpper:=Str;
 End;
 
-Procedure DelSpace(Var Str: String);
+Function NoSpace(Str: String): String;
 Var P: Integer;
 Begin
 P:=Pos(#32,Str);
@@ -81,12 +82,16 @@ Begin
 Delete(Str,P,1);
 P:=Pos(#32,Str);
 End;
+NoSpace:=Str;
 End;
 
 Function ExprOK(Expr: String): Boolean;
 Var I,I2,BrCount1,BrCount2: Integer;
 Res: Boolean;
+VAbs: Array[0..100] Of Boolean;
 Begin
+(* ExprOK:=True;
+Exit; *)
 ExprOK:=False;
 If Expr='' Then Exit;
 If (Length(Expr)=1) And (Expr[1] In Operators+['!']) Then Exit;
@@ -94,8 +99,32 @@ If Expr[1] In (Operators-['+','-']+['!']) Then Exit;
 If Expr[Length(Expr)]='.' Then Exit;
 Res:=True;
 BrCount1:=0; BrCount2:=0;
+For I:=0 To 100 Do VAbs[I]:=True;
 For I:=1 To Length(Expr) Do
 Begin
+If Expr[I]='|' Then
+Begin
+VAbs[BrCount1-BrCount2]:=Not VAbs[BrCount1-BrCount2];
+If Vabs[BrCount1-BrCount2] Then
+If Not(Expr[I-1] In (Cifre2+['!'])) Then
+Begin
+Res:=False;
+Break;
+End Else
+Else
+If I<Length(Expr) Then
+If (Expr[I+1]='!') Then
+Begin
+Res:=False;
+Break;
+End;
+End;
+If Not VAbs[BrCount1-BrCount2] And ((Expr[I]=')') Or
+(I=Length(Expr))) Then
+Begin
+Res:=False;
+Break;
+End;
 If Not(Expr[I] In (Operators+Cifre+Brackets+['!'])) Then
 Begin
 Res:=False;
@@ -108,13 +137,13 @@ Res:=False;
 Break;
 End;
 If (Expr[I]='!') And (I>1) Then
-If Not(Expr[I-1] In (Cifre2+[')'])) Then
+If Not(Expr[I-1] In (Cifre2+[')','|'])) Then
 Begin
 Res:=False;
 Break;
 End;
 If (Expr[I]='!') And (I<Length(Expr)) Then
-If Not(Expr[I+1] In (Operators+[')'])) Then
+If Not(Expr[I+1] In (Operators+[')','|'])) Then
 Begin
 Res:=False;
 Break;
@@ -163,24 +192,31 @@ Function Solve_Exp(Var Express,Error: String): Boolean;
 Var Expr,ReString,ExprLeft,ExprRight,Token1,Token2: String;
 I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos1B,Pos2: Integer;
 Result,Num1,Num2: Extended;
-Operator: Char;
+Oper: Char;
 Prec: Byte;
 ExpSign: Boolean;
 Begin
 Expr:=Express;
 Error:=''; ExpSign:=False;
 ExprLeft:=''; ExprRight:=''; ReString:=''; Token1:='';
-Token2:=''; Operator:=#0; TokSign1:=1; TokSign2:=1;
+Token2:=''; Oper:=#0; TokSign1:=1; TokSign2:=1;
 Pos1:=Pos('!',Expr);
 If Pos1>0 Then
 Begin
-For Pos1B:=Pos1-1 DownTo 1 Do
+For Pos1B:=Pos1-1 DownTo 0 Do
+If Pos1B>0 Then
 If Not(Expr[Pos1B] In Cifre) Then Break;
-If Pos1B>1 Then Pos1B:=Pos1B+1;
+Pos1B:=Pos1B+1;
 Token1:=Copy(Expr,Pos1B,Pos1-Pos1B);
 ExprLeft:=Copy(Expr,1,Pos1B-1);
 ExprRight:=Copy(Expr,Pos1+1,Length(Expr));
 Val(Token1,Num1,Err1);
+If Num1<>Round(Num1) Then
+Begin
+Error:='Cannot calculate factorial.';
+Solve_Exp:=True;
+Exit;
+End;
 Result:=Factorial(Round(Num1));
 
 If Result=Int(Result) Then Prec:=0 Else Prec:=2;
@@ -244,7 +280,7 @@ If Expr[I] In Cifre Then Token1:=Token1+Expr[I]
 Else
 If Expr[I] In Operators Then
 Begin
-Operator:=Expr[I];
+Oper:=Expr[I];
 If Expr[I+1]='-' Then
 Begin
 Delete(Expr,I+1,1);
@@ -271,8 +307,10 @@ Val(Token2,Num2,Err2);
 If ExpSign Then TokSign1:=-1;
 Num1:=Num1*TokSign1;
 Num2:=Num2*TokSign2;
-Case Operator Of
+Case Oper Of
 #0: Begin
+If Num1=Int(Num1) Then Prec:=0 Else Prec:=2;
+Str(Num1:0:Prec,Express);
 Solve_Exp:=False;
 Exit;
 End;
@@ -305,16 +343,31 @@ End;
 
 Procedure Solve_Brackets(Expr: String);
 Var SubExpr,ExprLeft,ExprRight,OldExpr: String;
-I,I2,Pos1,Pos2: Integer;
+Pos1,Pos2: Integer;
+Abs: Boolean;
 Begin
 ExprLeft:=''; ExprRight:=''; Err:='';
 Writeln(Expr);
 Repeat
+Abs:=False;
 Pos1:=Pos(')',Expr);
+If Pos1=0 Then
+Begin
+Pos1:=Pos('|',Expr);
+Pos1:=Pos1+Pos('|',Copy(Expr,Pos1+1,Length(Expr)-Pos1));
+If Pos1>0 Then Abs:=True;
+End;
 If Pos1>0 Then
 Begin
 For Pos2:=Pos1-1 DownTo 1 Do
-If Expr[Pos2]='(' Then Break;
+If Expr[Pos2] In ['(','|'] Then Break;
+If (Expr[Pos2]='|') And (Expr[Pos1]<>'|') Then
+Begin
+Pos1:=Pos2;
+For Pos2:=Pos1-1 DownTo 1 Do
+If Expr[Pos2]='|' Then Break;
+Abs:=True;
+End;
 SubExpr:=Copy(Expr,Pos2+1,Pos1-Pos2-1);
 TextColor(Colors[4]);
 OldExpr:='';
@@ -326,20 +379,19 @@ TextColor(Colors[5]);
 Writeln('Error: ',Err);
 Break;
 End;
-If OldExpr<>'' Then
-Begin
-Writeln(NoSquare(OldExpr));
+If OldExpr<>'' Then Writeln(NoSquare(OldExpr));
 
 OldExpr:=Copy(Expr,1,Pos2)+SubExpr+Copy(Expr,Pos1,Length(Expr));
-End;
 End;
 If Err='' Then
 Begin
 ExprLeft:=Copy(Expr,1,Pos2-1);
 ExprRight:=Copy(Expr,Pos1+1,Length(Expr));
 If Pos1+1<=Length(Expr) Then
-If (Expr[Pos1+1]='^') And (SubExpr[1]='-') Then
+If (Expr[Pos1+1]='^') And (SubExpr[1]='-') And Not Abs
+Then
 SubExpr:='['+SubExpr+']';
+If Abs And (SubExpr[1]='-') Then Delete(SubExpr,1,1);
 If (ExprLeft<>'') And (SubExpr[1]='-') Then
 Case ExprLeft[Length(ExprLeft)] Of
 '+': ExprLeft:=Copy(ExprLeft,1,Length(ExprLeft)-1);
@@ -372,18 +424,34 @@ End;
 BEGIN
 Clrscr;
 TextColor(Colors[1]);
-Writeln('PAS Math, version 0.26 alpha');
+Writeln('PAS Math, version 0.27 beta');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
-Writeln('Brackets () supported. Write QUIT to exit.');
+Writeln('Write QUIT to exit, HELP for more options.');
 Window(1,6,80,25);
 Repeat
 TextColor(Colors[2]);
 Write('PAS> ');
 TextColor(Colors[3]);
 Readln(Expr);
-If StrUpper(Expr)='QUIT' Then Break;
-DelSpace(Expr);
+If NoSpace(StrUpper(Expr))='QUIT' Then Break;
+If NoSpace(StrUpper(Expr))='CLS' Then
+Begin
+Clrscr;
+Continue;
+End;
+If NoSpace(StrUpper(Expr))='HELP' Then
+Begin
+TextColor(Colors[5]);
+Writeln('List of the commands: ');
+TextColor(Colors[3]);
+Writeln('CLS - Clear the screen.');
+Writeln('HELP - Show this screen.');
+Writeln('QUIT - Exit the program.');
+Writeln;
+Continue;
+End;
+Expr:=NoSpace(Expr);
 If ExprOK(Expr) Then Solve_Brackets(Expr)
 Else
 If Expr<>'' Then
@@ -394,4 +462,6 @@ End;
 Writeln;
 Until False;
 Window(1,1,80,25);
+NormVideo;
+Clrscr;
 END.
