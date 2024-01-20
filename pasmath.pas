@@ -1,16 +1,18 @@
-{ This source is to be distributed under the terms of the GPL -
-Gnu Public License.
+{ This source is to be distributed under the terms
+of the GPL - Gnu Public License.
 Copyright (C) 2001 Michele Povigna, Carmelo Spiccia.
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+This program is free software; you can redistribute it
+and/or modify it under the terms of the GNU General
+Public License as published by the Free Software
+Foundation; either version 2, or (at your option) any
+later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+This program is distributed in the hope that it will
+be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
 
 You can find a copy of this license at
 http://www.gnu.org/licenses/gpl.txt }
@@ -24,7 +26,14 @@ Operators=['^','*','/','+','-'];
 Brackets=['(',')'];
 Operators2: Array[1..5] Of Char = ('^','*','/','+','-');
 Colors: Array[1..5] Of Byte = (2,9,7,7,5);
-Var Expr,OldExpr,Err: String;
+Var Expr,Err: String;
+
+Function Factorial(X: Extended): Extended; Forward;
+
+Function Factorial(X: Extended): Extended;
+Begin
+If X<=0 Then Factorial:=1 Else Factorial:=X*Factorial(X-1);
+End;
 
 Function Esp(Base,Esponente: Extended): Extended;
 Var Res: Extended;
@@ -41,6 +50,20 @@ If Esponente<0 Then Res:=1/Res;
 Esp:=Res;
 End;
 
+Function NoSquare(Str: String): String;
+Var I: Integer;
+Begin
+Repeat
+I:=Pos('[',Str);
+If I>0 Then Str[I]:='(';
+Until I=0;
+Repeat
+I:=Pos(']',Str);
+If I>0 Then Str[I]:=')';
+Until I=0;
+NoSquare:=Str;
+End;
+
 Function StrUpper(Str: String): String;
 Var I: Integer;
 Begin
@@ -53,7 +76,7 @@ Procedure DelSpace(Var Str: String);
 Var P: Integer;
 Begin
 P:=Pos(#32,Str);
-While P<>0 Do
+While P>0 Do
 Begin
 Delete(Str,P,1);
 P:=Pos(#32,Str);
@@ -66,20 +89,44 @@ Res: Boolean;
 Begin
 ExprOK:=False;
 If Expr='' Then Exit;
-If (Length(Expr)=1) And (Expr[1] In Operators) Then Exit;
-If Expr[1] In (Operators-['+','-']) Then Exit;
+If (Length(Expr)=1) And (Expr[1] In Operators+['!']) Then Exit;
+If Expr[1] In (Operators-['+','-']+['!']) Then Exit;
 If Expr[Length(Expr)]='.' Then Exit;
 Res:=True;
 BrCount1:=0; BrCount2:=0;
 For I:=1 To Length(Expr) Do
 Begin
-If Not (Expr[I] In (Operators+Cifre+Brackets)) Then
+If Not(Expr[I] In (Operators+Cifre+Brackets+['!'])) Then
 Begin
 Res:=False;
 Break;
 End;
-If (I<>Length(Expr)) And (Expr[I]='.') Then
-If Not (Expr[I+1] In Cifre2) Then
+If (Expr[I]='.') And (I<Length(Expr)) Then
+If Not(Expr[I+1] In Cifre2) Then
+Begin
+Res:=False;
+Break;
+End;
+If (Expr[I]='!') And (I>1) Then
+If Not(Expr[I-1] In (Cifre2+[')'])) Then
+Begin
+Res:=False;
+Break;
+End;
+If (Expr[I]='!') And (I<Length(Expr)) Then
+If Not(Expr[I+1] In (Operators+[')'])) Then
+Begin
+Res:=False;
+Break;
+End;
+If (Expr[I]='(') And (I>1) Then
+If Expr[I-1] In Cifre Then
+Begin
+Res:=False;
+Break;
+End;
+If (Expr[I]=')') And (I<Length(Expr)) Then
+If Expr[I+1] In Cifre Then
 Begin
 Res:=False;
 Break;
@@ -104,11 +151,11 @@ End;
 If (Not Res) Or (BrCount1<>BrCount2) Then Exit;
 For I:=1 To 3 Do
 For I2:=1 To 3 Do
-If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
+If Pos(Operators2[I]+Operators2[I2],Expr)>0 Then Res:=False;
 If Not Res Then Exit;
 For I:=4 To 5 Do
 For I2:=1 To 5 Do
-If Pos(Operators2[I]+Operators2[I2],Expr)<>0 Then Res:=False;
+If Pos(Operators2[I]+Operators2[I2],Expr)>0 Then Res:=False;
 ExprOK:=Res;
 End;
 
@@ -124,15 +171,36 @@ Expr:=Express;
 Error:=''; ExpSign:=False;
 ExprLeft:=''; ExprRight:=''; ReString:=''; Token1:='';
 Token2:=''; Operator:=#0; TokSign1:=1; TokSign2:=1;
+Pos1:=Pos('!',Expr);
+If Pos1>0 Then
+Begin
+For Pos1B:=Pos1-1 DownTo 1 Do
+If Not(Expr[Pos1B] In Cifre) Then Break;
+If Pos1B>1 Then Pos1B:=Pos1B+1;
+Token1:=Copy(Expr,Pos1B,Pos1-Pos1B);
+ExprLeft:=Copy(Expr,1,Pos1B-1);
+ExprRight:=Copy(Expr,Pos1+1,Length(Expr));
+Val(Token1,Num1,Err1);
+Result:=Factorial(Round(Num1));
+
+If Result=Int(Result) Then Prec:=0 Else Prec:=2;
+Str(Result:0:Prec,ReString);
+If (ExprLeft<>'') And (Result>=0) Then
+If Not (ExprLeft[Length(ExprLeft)] In Operators) Then
+ExprLeft:=ExprLeft+'+';
+Express:=ExprLeft+ReString+ExprRight;
+Solve_Exp:=True;
+Exit;
+End;
 For I:=1 To 5 Do
 Begin
 Pos1:=Pos(Operators2[I],Expr);
-If I=2 Then
+If (I=2) Or (I=4) Then
 Begin
-Pos1B:=Pos(Operators2[3],Expr);
+Pos1B:=Pos(Operators2[I+1],Expr);
 If (Pos1B>0) And (Pos1B<Pos1) Then Pos1:=Pos1B;
 End;
-If Pos1<>0 Then
+If Pos1>0 Then
 Begin
 If (I=1) And (Expr[Pos1-1]=']') Then
 Begin
@@ -236,23 +304,20 @@ Solve_Exp:=True;
 End;
 
 Procedure Solve_Brackets(Expr: String);
-Var ReString,SubExpr,ExprLeft,ExprRight: String;
-I,I2,Err1,Err2,TokSign1,TokSign2,Pos1,Pos2: Integer;
-Result,Num1,Num2: Extended;
-Operator: Char;
-Prec: Byte;
+Var SubExpr,ExprLeft,ExprRight,OldExpr: String;
+I,I2,Pos1,Pos2: Integer;
 Begin
-ExprLeft:=''; ExprRight:=''; ReString:='';
-Operator:=#0; TokSign1:=1; TokSign2:=1;
+ExprLeft:=''; ExprRight:=''; Err:='';
 Writeln(Expr);
 Repeat
 Pos1:=Pos(')',Expr);
-If Pos1<>0 Then
+If Pos1>0 Then
 Begin
 For Pos2:=Pos1-1 DownTo 1 Do
 If Expr[Pos2]='(' Then Break;
 SubExpr:=Copy(Expr,Pos2+1,Pos1-Pos2-1);
 TextColor(Colors[4]);
+OldExpr:='';
 While Solve_Exp(SubExpr,Err) Do
 Begin
 If Err<>'' Then
@@ -261,21 +326,35 @@ TextColor(Colors[5]);
 Writeln('Error: ',Err);
 Break;
 End;
+If OldExpr<>'' Then
+Begin
+Writeln(NoSquare(OldExpr));
 
-Writeln(Copy(Expr,1,Pos2),SubExpr,Copy(Expr,Pos1,Length(Expr)));
+OldExpr:=Copy(Expr,1,Pos2)+SubExpr+Copy(Expr,Pos1,Length(Expr));
 End;
+End;
+If Err='' Then
+Begin
+ExprLeft:=Copy(Expr,1,Pos2-1);
+ExprRight:=Copy(Expr,Pos1+1,Length(Expr));
 If Pos1+1<=Length(Expr) Then
 If (Expr[Pos1+1]='^') And (SubExpr[1]='-') Then
-
-Expr:=Copy(Expr,1,Pos2-1)+'['+SubExpr+']'+Copy(Expr,Pos1+1,Length(Expr))
-Else
-
-Expr:=Copy(Expr,1,Pos2-1)+SubExpr+Copy(Expr,Pos1+1,Length(Expr))
-Else
-
-Expr:=Copy(Expr,1,Pos2-1)+SubExpr+Copy(Expr,Pos1+1,Length(Expr));
+SubExpr:='['+SubExpr+']';
+If (ExprLeft<>'') And (SubExpr[1]='-') Then
+Case ExprLeft[Length(ExprLeft)] Of
+'+': ExprLeft:=Copy(ExprLeft,1,Length(ExprLeft)-1);
+'-': Begin
+ExprLeft:=Copy(ExprLeft,1,Length(ExprLeft)-1);
+SubExpr[1]:='+';
 End;
-Until Pos1=0;
+End;
+Expr:=ExprLeft+SubExpr+ExprRight;
+Writeln(NoSquare(Expr));
+End;
+End;
+Until (Pos1=0) Or (Err<>'');
+If Err='' Then
+Begin
 TextColor(Colors[4]);
 While Solve_Exp(Expr,Err) Do
 Begin
@@ -285,14 +364,15 @@ TextColor(Colors[5]);
 Writeln('Error: ',Err);
 Break;
 End;
-Writeln(Expr);
+Writeln(NoSquare(Expr));
+End;
 End;
 End;
 
 BEGIN
 Clrscr;
 TextColor(Colors[1]);
-Writeln('PAS Math, version 0.25 beta');
+Writeln('PAS Math, version 0.26 alpha');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
 Writeln('Brackets () supported. Write QUIT to exit.');
