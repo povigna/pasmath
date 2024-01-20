@@ -2,18 +2,22 @@
 
 PASmath is a Pascal-based mathematical expression parser and evaluator.
 
-## Version 0.29 beta 3
+## Version 0.291 alpha
 
 ### Release Date
 
-Released on Feb 20, 2002.
+Released on Mar 11, 2002.
 
 ### Release Notes:
 
-#### Bug Fix and Enhancements
+#### Changes and Additions
 
-- Resolved a significant bug in the calculation of powers that has persisted for a considerable time.
-- Improved the display of certain cases of numbers in scientific notation for better readability.
+- Compared to the last version released twenty days ago, this version has an additional 12 KB.
+- Bug Fixes and Improvements:
+  1. Corrected a significant bug in handling negative signs for numbers in exponential notation. Previously, expressions like "4-2/3" did not work as expected.
+  2. Added variable management using the "SET" command. The variable "ANS" now holds the result of the last calculated expression. Credit to "Il mago delle comete" for the variable implementation.
+  3. Introduced the DEC command to set the number of decimal places (default is now four instead of two). Also, added the EXIT command (identical to QUIT) for convenience.
+  4. Implemented a display filter for better readability. For example, input like "+000041*+00000.12000000" now appears as "41*0.12".
 
 ### Overview
 
@@ -30,27 +34,19 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You can find a copy of this license at [http://www.gnu.org/licenses/gpl.txt](http://www.gnu.org/licenses/gpl.txt).
 
-### Features
-
-- Supports basic arithmetic operations: addition, subtraction, multiplication, and division.
-- Handles exponentiation and parentheses.
-- Provides color-coded expression output.
-- Allows the input of mathematical expressions with various symbols and functions.
-- Includes a factorial function.
-- Offers scientific notation support.
-
 ### Usage
 
 1. Run the program in a Pascal environment.
 2. Input a mathematical expression when prompted.
 3. View the result and any errors in the output.
 
-### Notes
+### Contributing
 
-- The program uses Pascal syntax and is distributed under the GPL.
-- Color-coded output enhances readability.
-- The factorial function is supported for non-negative integers.
-- Absolute value may not work with real numbers, and the factorial may not behave as expected.
+Feel free to contribute to the development of this project. Fork the repository, make changes, and submit a pull request.
+
+### Issues
+
+If you encounter any issues or have suggestions, please open an issue.
 
 ### Disclaimer
 
