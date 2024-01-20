@@ -1,0 +1,22 @@
+# TODO
+
+## Current Issues:
+
+- The problem with exponentiation still needs resolution.
+
+## Immediate Goals:
+
+1. Correct all existing bugs, with a primary focus on fixing the exponentiation issue.
+2. Introduce the percentage operator ("%"), equivalent to "/100."
+3. Optimize and generalize the code as much as possible in preparation for future implementations.
+4. Consider implementing text file output by version 0.30 for increased reliability.
+
+## Future Plans:
+
+1. Implement functions.
+2. Extend support for complex numbers.
+3. Incorporate fraction functionality.
+
+## Note:
+
+The addition of complex numbers and fractions poses a significant challenge, and careful consideration will be given to choose the most suitable solution.
