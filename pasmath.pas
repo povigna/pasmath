@@ -39,6 +39,7 @@ ipAltri = $1000; ipEverything = $FFFFFFFF;
 Var InpCar,Expr,Err: String;
 I,WX,WY,VLength,VPos,IPos: Byte;
 VExpr: Array[1..VMax] Of String;
+PC: Integer;
 
 Procedure WriteExpr(St: String; Var BrCount1,BrCount2: Integer);
 Var I: Integer;
@@ -74,21 +75,25 @@ If Not ExprColors Then Write(St) Else WriteExpr(St,BrCount1,BrCount2);
 Writeln;
 End;
 
-Function Input(Var Stringa: String; X,Y,Max: Integer;
+Function Input(Var Stringa: String; Var PCur: Integer; X,Y,Max: Integer;
 Sfondo: Char; Attrib: longint): String;
 Var Car: Char;
 Ris: String;
-K,BrCount1,BrCount2: Integer;
+K,BrCount1,BrCount2,TmpNum: Integer;
+InsCar: Boolean;
 Begin
 BrCount1:=0; BrCount2:=0;
 If X<1 Then X:=1;
 If Y<1 Then Y:=1;
+If PCur>0 Then PCur:=0;
+If Length(Stringa)+PCur<0 Then PCur:=-Length(Stringa);
 If Max>(80-X) Then Max:=80-X;
 Gotoxy(X,Y);
 WriteExpr(Stringa,BrCount1,BrCount2);
 For K:=1 To Max-Length(Stringa) Do Write(Sfondo);
 Gotoxy(X+Length(Stringa),Y);
 Repeat
+Gotoxy(X+Length(Stringa)+PCur,Y);
 Textcolor(7);
 Car:=Readkey;
 If ExprColors Then
@@ -108,41 +113,40 @@ If Car='|' Then Textcolor(9);
 If (Attrib And ipCaseUp)>0 Then Car:=Upcase(Car);
 If BrCount1>BrCount2 Then Textcolor(4);
 End;
+InsCar:=False;
 Case Car Of
 ^C: Halt; (*** Per emergenza ***)
-'0'..'9': If (Length(Stringa)<Max) And ((Attrib And ipNum)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
-'a'..'z','A'..'Z': If (Length(Stringa)<Max) And ((Attrib And ipAlf)>0) Then
-Begin Write(Car); Stringa:=Stringa+Car; End;
-' ': If (Length(Stringa)<Max) And ((Attrib And ipSpc)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
-',': If (Length(Stringa)<Max) And ((Attrib And ipVir)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
-'.': If (Length(Stringa)<Max) And ((Attrib And ipPto)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
-'!': If (Length(Stringa)<Max) And ((Attrib And ipFct)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
+'0'..'9': If (Length(Stringa)<Max) And ((Attrib And ipNum)>0) Then InsCar:=True;
+'a'..'z','A'..'Z': If (Length(Stringa)<Max) And ((Attrib And ipAlf)>0) Then InsCar:=True;
+' ': If (Length(Stringa)<Max) And ((Attrib And ipSpc)>0) Then InsCar:=True;
+',': If (Length(Stringa)<Max) And ((Attrib And ipVir)>0) Then InsCar:=True;
+'.': If (Length(Stringa)<Max) And ((Attrib And ipPto)>0) Then InsCar:=True;
+'!': If (Length(Stringa)<Max) And ((Attrib And ipFct)>0) Then InsCar:=True;
 '^','*','/','+','-':
-If (Length(Stringa)<Max) And ((Attrib And ipOpe)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And ((Attrib And ipOpe)>0) Then InsCar:=True;
 '(',')','|':
-If (Length(Stringa)<Max) And ((Attrib And ipBrk)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And ((Attrib And ipBrk)>0) Then InsCar:=True;
 'Š','‚','•','…','—',' ':
-If (Length(Stringa)<Max) And ((Attrib And ipAcc)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And ((Attrib And ipAcc)>0) Then InsCar:=True;
 '<','>',';',':','_','\','"','œ','$','%','&',
 '=','?','õ','ø','‡','#','@','[',']','''':
-If (Length(Stringa)<Max) And ((Attrib And ipAll)>0) Then Begin Write(Car); Stringa:=Stringa+Car; End;
+If (Length(Stringa)<Max) And ((Attrib And ipAll)>0) Then InsCar:=True;
 #9: If ((Attrib And ipTab)>0) Then Begin Ris:=Car; Break; End;
 #13,#27: Begin Ris:=Car; Break; End;
 #8: If Length(Stringa)>0 Then
 Begin
-Case Stringa[Length(Stringa)] Of
-'(': BrCount2:=BrCount2-1;
-')': BrCount1:=BrCount1-1;
-End;
-Delete(Stringa,Length(Stringa),1);
+Delete(Stringa,Length(Stringa)+PCur,1);
 Gotoxy(X+Length(Stringa),Y);
+Gotoxy(X,Y);
+WriteExpr(Stringa,BrCount1,BrCount2);
 Write(Sfondo);
-Gotoxy(X+Length(Stringa),Y);
 End;
 #0: Begin
 Car:=Readkey;
 If ((Attrib And ipAltri)>0) Then
 Case Upcase(Car) Of
+'M': If PCur<0 Then PCur:=PCur+1;
+'K': If Length(Stringa)+PCur>0 Then PCur:=PCur-1;
 'H': Begin Ris:='Up'; Break; End;
 'P': Begin Ris:='Down'; Break; End;
 '<': Begin Ris:='F2'; Break; End;
@@ -154,14 +158,29 @@ Case Upcase(Car) Of
 'B': Begin Ris:='F8'; Break; End;
 'C': Begin Ris:='F9'; Break; End;
 'D': Begin Ris:='F10'; Break; End;
-'O': Begin Ris:='End'; Break; End;
+'O': PCur:=0;
 'R': Begin Ris:='Ins'; Break; End;
-'S': Begin Ris:='Del'; Break; End;
-'G': Begin Ris:='Home'; Break; End;
+'S': If PCur<0 Then
+Begin
+Delete(Stringa,Length(Stringa)+PCur+1,1);
+Gotoxy(X+Length(Stringa),Y);
+Gotoxy(X,Y);
+WriteExpr(Stringa,BrCount1,BrCount2);
+Write(Sfondo);
+PCur:=PCur+1;
+End;
+'G': PCur:=-Length(Stringa);
 'I': Begin Ris:='Page Up'; Break; End;
 'Q': Begin Ris:='Page Down'; Break; End;
 End;
 End;
+End;
+If InsCar Then
+Begin
+TmpNum:=Length(Stringa);
+Stringa:=Copy(Stringa,1,TmpNum+PCur)+Car+Copy(Stringa,TmpNum+PCur+1,TmpNum);
+Gotoxy(X,Y);
+WriteExpr(Stringa,BrCount1,BrCount2);
 End;
 Until False;
 Input:=Ris;
@@ -217,12 +236,12 @@ If SubSt[1]='_' Then SubSt[1]:='-';
 Delete(SubSt,Length(SubSt)-1,2);
 Val(TmpSt,Num,Err2);
 Val(SubSt,Esp,Err2);
-If (Esp>=-2) And (Esp<=14) Then
+If (Esp>=-2) And (Esp<=16) Then
 Begin
 Num:=Num*Exp(Esp*Ln(10));
 Esp:=0;
 End;
-If Num=Round(Num) Then Prec:=0;
+If Num=Int(Num) Then Prec:=0;
 Str(Num:0:Prec,TmpSt);
 Str(Esp:0:0,SubSt);
 If Esp=0 Then SubSt:=TmpSt
@@ -315,87 +334,87 @@ If TmpStr2[1]='-' Then TmpStr2[1]:='_';
 NumToScient:=NoSpace('[$'+Copy(TmpStr,1,I-1)+'$'+TmpStr2,1);
 End;
 
-Function ImpMul_Yes(Str: String): String;
+Function ImpMul_Yes(St: String): String;
 Var I,OldI,BrCount1,BrCount2: Integer;
 VAbs: Array[0..100] Of Boolean;
 Begin
-I:=Pos('*(',Str);
+I:=Pos('*(',St);
 While I>0 Do
 Begin
-Delete(Str,I,1);
-I:=Pos('*(',Str);
+Delete(St,I,1);
+I:=Pos('*(',St);
 End;
 I:=0;
 Repeat
 OldI:=I;
-I:=I+Pos(')*',Copy(Str,I+1,Length(Str)-I));
+I:=I+Pos(')*',Copy(St,I+1,Length(St)-I));
 If I<>OldI Then
-If Not (Str[I+2] In Operators) Then Delete(Str,I+1,1);
+If Not (St[I+2] In Operators) Then Delete(St,I+1,1);
 Until OldI=I;
 I:=0;
 Repeat
 OldI:=I;
-I:=I+Pos('!*',Copy(Str,I+1,Length(Str)-I));
+I:=I+Pos('!*',Copy(St,I+1,Length(St)-I));
 If I<>OldI Then
-If Not (Str[I+2] In Operators) Then Delete(Str,I+1,1);
+If Not (St[I+2] In Operators) Then Delete(St,I+1,1);
 Until OldI=I;
 BrCount1:=0; BrCount2:=0;
 For I:=0 To 100 Do VAbs[I]:=True;
 I:=0;
-While I<Length(Str) Do
+While I<Length(St) Do
 Begin
 I:=I+1;
-If Str[I]='(' Then BrCount1:=BrCount1+1;
-If Str[I]=')' Then BrCount2:=BrCount2+1;
+If St[I]='(' Then BrCount1:=BrCount1+1;
+If St[I]=')' Then BrCount2:=BrCount2+1;
 If BrCount2>BrCount1 Then Break;
-If Str[I]='|' Then
+If St[I]='|' Then
 Begin
 VAbs[BrCount1-BrCount2]:=Not VAbs[BrCount1-BrCount2];
 If Vabs[BrCount1-BrCount2] Then
 Begin
-If I<Length(Str)-1 Then
-If (Str[I+1]='*') And Not (Str[I+2] In Operators) Then
-Delete(Str,I+1,1);
+If I<Length(St)-1 Then
+If (St[I+1]='*') And Not (St[I+2] In Operators) Then
+Delete(St,I+1,1);
 End
 Else
 If I>1 Then
-If (Str[I-1]='*') Then
+If (St[I-1]='*') Then
 Begin
-Delete(Str,I-1,1);
+Delete(St,I-1,1);
 I:=I-1;
 End;
 End;
 End;
-ImpMul_Yes:=Str;
+ImpMul_Yes:=St;
 End;
 
-Function ImpMul_No(Str: String): String;
+Function ImpMul_No(St: String): String;
 Var OldI,I,BrCount1,BrCount2: Integer;
 VAbs: Array[0..100] Of Boolean;
 Begin
 BrCount1:=0; BrCount2:=0;
 For I:=0 To 100 Do VAbs[I]:=True;
 I:=0;
-While I<Length(Str) Do
+While I<Length(St) Do
 Begin
 I:=I+1;
-If Str[I]='(' Then BrCount1:=BrCount1+1;
-If Str[I]=')' Then BrCount2:=BrCount2+1;
+If St[I]='(' Then BrCount1:=BrCount1+1;
+If St[I]=')' Then BrCount2:=BrCount2+1;
 If BrCount2>BrCount1 Then Break;
-If Str[I]='|' Then
+If St[I]='|' Then
 Begin
 VAbs[BrCount1-BrCount2]:=Not VAbs[BrCount1-BrCount2];
 If Vabs[BrCount1-BrCount2] Then
 Begin
-If I<Length(Str) Then
-If Not(Str[I+1] In (Operators+[')','!'])) Then
-Str:=Copy(Str,1,I)+'*'+Copy(Str,I+1,Length(Str)-I);
+If I<Length(St) Then
+If Not(St[I+1] In (Operators+[')','!'])) Then
+St:=Copy(St,1,I)+'*'+Copy(St,I+1,Length(St)-I);
 End
 Else
 If I>1 Then
-If Not(Str[I-1] In (Operators+['('])) Then
+If Not(St[I-1] In (Operators+['('])) Then
 Begin
-Str:=Copy(Str,1,I-1)+'*'+Copy(Str,I,Length(Str)-I+1);
+St:=Copy(St,1,I-1)+'*'+Copy(St,I,Length(St)-I+1);
 I:=I+1;
 End;
 End;
@@ -403,31 +422,31 @@ End;
 I:=0;
 Repeat
 OldI:=I;
-I:=I+Pos(')',Copy(Str,I+1,Length(Str)-I));
-If (I>0) And (I<Length(Str)) Then
-If Not(Str[I+1] In (Operators+[')','|','!'])) Then
-Str:=Copy(Str,1,I)+'*'+Copy(Str,I+1,Length(Str)-I);
+I:=I+Pos(')',Copy(St,I+1,Length(St)-I));
+If (I>0) And (I<Length(St)) Then
+If Not(St[I+1] In (Operators+[')','|','!'])) Then
+St:=Copy(St,1,I)+'*'+Copy(St,I+1,Length(St)-I);
 Until OldI=I;
 I:=0;
 Repeat
 OldI:=I;
-I:=I+Pos('(',Copy(Str,I+1,Length(Str)-I));
+I:=I+Pos('(',Copy(St,I+1,Length(St)-I));
 If I>1 Then
-If Not(Str[I-1] In (Operators+['(','|'])) Then
+If Not(St[I-1] In (Operators+['(','|'])) Then
 Begin
-Str:=Copy(Str,1,I-1)+'*'+Copy(Str,I,Length(Str)-I+1);
+St:=Copy(St,1,I-1)+'*'+Copy(St,I,Length(St)-I+1);
 I:=I+1;
 End;
 Until OldI=I;
 I:=0;
 Repeat
 OldI:=I;
-I:=I+Pos('!',Copy(Str,I+1,Length(Str)-I));
-If (I>0) And (I<Length(Str)) Then
-If Not(Str[I+1] In (Operators+[')','|'])) Then
-Str:=Copy(Str,1,I)+'*'+Copy(Str,I+1,Length(Str)-I);
+I:=I+Pos('!',Copy(St,I+1,Length(St)-I));
+If (I>0) And (I<Length(St)) Then
+If Not(St[I+1] In (Operators+[')','|'])) Then
+St:=Copy(St,1,I)+'*'+Copy(St,I+1,Length(St)-I);
 Until OldI=I;
-ImpMul_No:=Str;
+ImpMul_No:=St;
 End;
 
 Function ExprOK(Expr: String): Boolean;
@@ -449,7 +468,7 @@ If Expr[I]='|' Then
 Begin
 VAbs[BrCount1-BrCount2]:=Not VAbs[BrCount1-BrCount2];
 If Vabs[BrCount1-BrCount2] Then
-If Not(Expr[I-1] In (Cifre2+['!'])) Then
+If Not(Expr[I-1] In (Cifre2+['!',')'])) Then
 Begin
 Res:=False;
 Break;
@@ -566,20 +585,20 @@ ExprLeft:=Copy(Expr,1,Pos1B-1);
 ExprRight:=Copy(Expr,Pos1+1,Length(Expr));
 If Token1[1]='[' Then Num1:=ScientToNum(Token1)
 Else Val(Token1,Num1,Err1);
-If Num1<>Round(Num1) Then
+If Num1<>Int(Num1) Then
 Begin
 Error:='Cannot calculate factorial.';
 Solve_Exp:=True;
 Exit;
 End;
-If Num1<1755 Then Result:=Factorial(Round(Num1))
+If Num1<1755 Then Result:=Factorial(Int(Num1))
 Else
 Begin
 Result:=0;
 Error:='Overflow';
 End;
 
-If Num1<33 Then
+If Abs(Result)<Exp(17*Ln(10)) Then
 Begin
 If Result=Int(Result) Then Prec:=0 Else Prec:=2;
 Str(Result:0:Prec,ReString)
@@ -596,7 +615,11 @@ End;
 (* --- Other Operators --- *)
 For I:=1 To 5 Do
 Begin
-Pos1:=Pos(Operators2[I],Expr);
+If I>1 Then Pos1:=Pos(Operators2[I],Expr)
+Else
+For Pos1:=Length(Expr) DownTo 0 Do
+If Pos1>0 Then
+If Expr[Pos1]='^' Then Break;
 If (I=2) Or (I=4) Then
 Begin
 Pos1B:=Pos(Operators2[I+1],Expr);
@@ -724,7 +747,7 @@ Error:='Cannot calculate exponential.';
 End
 Else Result:=-Exp(Num2*Ln(-Num1));
 End;
-If (Abs(Result)>=Exp(18*Ln(10)))
+If (Abs(Result)>=Exp(17*Ln(10)))
 Or ((Result<>Int(Result)) And HighPrecision) Then
 ReString:=NumToScient(Result)
 Else
@@ -734,8 +757,6 @@ Str(Result:0:Prec,ReString);
 End;
 If (ExprLeft<>'') And (Result>=0) Then
 If Not (ExprLeft[Length(ExprLeft)] In Operators) Then ExprLeft:=ExprLeft+'+';
-(* If (ExprRight<>'') And (Result>=0) Then
-If Not (ExprRight[1] In Operators) Then ExprRight:='*'+ExprRight; *)
 Express:=ExprLeft+ReString+ExprRight;
 Solve_Exp:=True;
 End;
@@ -833,14 +854,14 @@ End;
 End;
 End;
 
-Function ExCommand(Str: String): Byte;
+Function ExCommand(St: String): Byte;
 Var TmpInt,ConvErr: Integer;
 Result: Byte;
 Begin
 Result:=0;
-Str:=NoSpace(StrUpper(Expr),6);
-If Str='QUIT' Then Result:=2;
-If Str='COLOR' Then
+St:=NoSpace(StrUpper(Expr),6);
+If St='QUIT' Then Result:=2;
+If St='COLOR' Then
 Begin
 TextColor(Colors[4]);
 If ExprColors Then Writeln('Expression colors are ON.')
@@ -848,9 +869,9 @@ Else Writeln('Expression colors are OFF.');
 Writeln;
 Result:=1;
 End;
-If Copy(Str,1,6)='COLOR ' Then
+If Copy(St,1,6)='COLOR ' Then
 Begin
-If NoSpace(Copy(Str,7,Length(Str)-6),6)='OFF' Then
+If NoSpace(Copy(St,7,Length(St)-6),6)='OFF' Then
 Begin
 ExprColors:=False;
 TextColor(Colors[4]);
@@ -858,7 +879,7 @@ Writeln('Expression colors are OFF.');
 Writeln;
 Result:=1;
 End;
-If NoSpace(Copy(Str,7,Length(Str)-6),6)='ON' Then
+If NoSpace(Copy(St,7,Length(St)-6),6)='ON' Then
 Begin
 ExprColors:=True;
 TextColor(Colors[4]);
@@ -874,7 +895,7 @@ Writeln;
 Result:=1;
 End;
 End;
-If Str='DELAY' Then
+If St='DELAY' Then
 Begin
 TextColor(Colors[4]);
 If DelTime=0 Then Writeln('Delay is OFF (',DelTime,' ms).')
@@ -882,9 +903,9 @@ Else Writeln('Delay is ON (',DelTime,' ms).');
 Writeln;
 Result:=1;
 End;
-If Copy(Str,1,6)='DELAY ' Then
+If Copy(St,1,6)='DELAY ' Then
 Begin
-If NoSpace(Copy(Str,7,Length(Str)-6),6)='OFF' Then
+If NoSpace(Copy(St,7,Length(St)-6),6)='OFF' Then
 Begin
 DelTime:=0;
 TextColor(Colors[4]);
@@ -892,7 +913,7 @@ Writeln('Delay is OFF (',DelTime,' ms).');
 Writeln;
 Result:=1;
 End;
-If NoSpace(Copy(Str,7,Length(Str)-6),6)='ON' Then
+If NoSpace(Copy(St,7,Length(St)-6),6)='ON' Then
 Begin
 DelTime:=700;
 TextColor(Colors[4]);
@@ -902,7 +923,7 @@ Result:=1;
 End;
 If Result=0 Then
 Begin
-Val(Copy(Str,7,Length(Str)-6),TmpInt,ConvErr);
+Val(Copy(St,7,Length(St)-6),TmpInt,ConvErr);
 If TmpInt<0 Then ConvErr:=1;
 TextColor(Colors[4]);
 If ConVerr<>0 Then Writeln('Error: Invalid argument for DELAY.')
@@ -916,12 +937,12 @@ Writeln;
 Result:=1;
 End;
 End;
-If Str='CLS' Then
+If St='CLS' Then
 Begin
 Clrscr;
 Result:=1;
 End;
-If Str='HELP' Then
+If St='HELP' Then
 Begin
 TextColor(Colors[4]);
 Writeln('List of the commands: ');
@@ -940,7 +961,7 @@ End;
 BEGIN
 Clrscr;
 TextColor(Colors[1]);
-Writeln('PAS Math, version 0.29 beta');
+Writeln('PAS Math, version 0.29 beta 3');
 Writeln('Copyright (C) 2001 Michele Povigna, Carmelo Spiccia');
 Writeln('This is free software with ABSOLUTELY NO WARRANTY.');
 Writeln('Write QUIT to exit, HELP for more options.');
@@ -952,19 +973,20 @@ TextColor(Colors[2]);
 Write('PAS> ');
 Expr:='';
 WX:=WhereX; WY:=WhereY;
-VPos:=VLength;
+PC:=0; VPos:=VLength;
 Repeat
-InpCar:=Input(Expr,WX,WY,255,' ',ipEverything Xor ipCaseUp Xor ipAcc Xor ipAll Xor ipTab);
+InpCar:=Input(Expr,PC,WX,WY,255,' ',ipEverything Xor ipCaseUp Xor ipAcc Xor ipAll Xor ipTab);
 If InpCar=#27 Then Expr:='';
 If InpCar='Up' Then
 Begin
+If VPos=VLength Then VExpr[VPos]:=Expr;
 If VPos>1 Then VPos:=VPos-1;
-Expr:=VExpr[VPos];
+Expr:=VExpr[VPos]; PC:=0;
 End;
-If InpCar='Down' Then
+If (InpCar='Down') And (VPos<VLength) Then
 Begin
-If VPos<VLength Then VPos:=VPos+1;
-Expr:=VExpr[VPos];
+VPos:=VPos+1;
+Expr:=VExpr[VPos]; PC:=0;
 End;
 Until (InpCar=#13) And (Expr<>'');
 VExpr[VLength]:=Expr;
