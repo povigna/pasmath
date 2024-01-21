@@ -1,0 +1,51 @@
+Cls
+Echo "- Test di ipotesi sulla media della popolazione -"
+Echo
+Echo "Scegliere un'opzione: "
+Echo "1) Test a una coda"
+Echo "2) Test bilaterale"
+Echo "3) Esci"
+:Scelta
+Set Scelta=KEY$
+If Scelta=3 Goto Fine
+If Scelta<1 Goto Scelta
+If Scelta>2 Goto Scelta
+
+' -- Inserimento dei dati --
+Cls
+Print "Livello di significativita': "
+Set Alfa=INPUT$
+Print "Deviazione standard della popolazione: "
+Set Sigma=INPUT$
+Print "Media della popolazione: "
+Set MePop=INPUT$
+Print "Media del campione: "
+Set MeCamp=INPUT$
+Print "Ampiezza del campione: "
+Set n=INPUT$
+Echo
+
+' -- Calcolo del risultato --
+Set z=(MeCamp-MePop)/Sigma*Sqrt(n)
+If Scelta=2 Goto Bilaterale
+
+Set AlfaZ=Int("Exp(-.5X^2)/Sqrt(2Pi)",z,5)
+If AlfaZ<Alfa Goto VeraH1
+Goto VeraH0
+
+:Bilaterale
+Set AlfaZ=1-Int("Exp(-.5X^2)/Sqrt(2Pi)",-z,z)
+If AlfaZ<Alfa Goto VeraH1
+'Goto VeraH0
+
+' -- Visualizzazione del risultato --
+:VeraH0
+Echo "E' vera l'ipotesi nulla."
+End
+
+:VeraH1
+Echo "E' vera l'ipotesi alternativa."
+End
+
+:Fine
+End

@@ -1,0 +1,45 @@
+- Index of the files -
+
+Compiling.txt         Compilation information
+Contributors.txt      Special thanks to...
+History.txt           Information about all released PAS Math versions
+Index.txt             This index file
+License.txt           The GNU/GPL license
+Notes.txt             Notes about this distribution
+Readme.txt            Copyright information
+
+Pasm04.pas            PAS Math 0.4 source file
+Pasm.exe              PAS Math 0.4 executable
+Test.pms              PAS Math Script example file
+
+pmathml.xsl           Required to display MathML files on the browser
+pmathml-css.xml       Required to display MathML files on the browser
+
+Note: In order to display MathML files on a browser you also need
+a plug-in. You can download the Math Player plug-in for free from http://www.dessci.com/webmath/mathplayer (it requires Internet
+Explorer 5.5 or later) or the IBM TechExplorer plug-in from http://www.software.ibm.com/techexplorer (it requires Internet
+Explorer 5.5 or later).
+
+------------------------------------------------------------------------------
+
+- Elenco dei file -
+
+Compiling.txt         Informazioni di compilazione
+Contributors.txt      Ringraziamenti
+History.txt           Informazioni su tutte le versioni di PAS Math rilasciate
+Index.txt             Questo file di elenco
+License.txt           La licenza GNU/GPL
+Notes.txt             Note su questa distribuzione
+Readme.txt            Informazioni di copyright
+
+Pasm04.pas            PAS Math 0.4 - File sorgente
+Pasm.exe              PAS Math 0.4 - Eseguibile
+Test.pms              PAS Math Script - File di esempio
+
+pmathml.xsl           Necessario per visualizzare file MathML sul browser
+pmathml-css.xml       Necessario per visualizzare file MathML sul browser
+
+Note: Per visualizzare file MathML su un browser devi avere inoltre
+un plug-in. Puoi scaricare il plug-in Math Player gratuitamente da http://www.dessci.com/webmath/mathplayer (richiede Internet
+Explorer 5.5 o successivo) oppure il plug-in IBM TechExplorer da http://www.software.ibm.com/techexplorer (richiede Internet
+Explorer 5.5 o successivo).

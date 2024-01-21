@@ -1,0 +1,31 @@
+PAS Math 0.4 alpha
+
+In this version of PAS Math a run-time error
+could occurs if compiled with $H+ directive
+for AnsiStrings. For example, this error occurs
+if you specify an invalid function as the first
+parameter of the functions VAL, DERIV and INT.
+
+In this distribution $H+ is still used, therefore
+this error may occurs. If you remove the $H+
+directive PAS Math will not calculate long
+expressions correctly, expecially if many real
+numbers are present.
+
+-------------------------------------------------
+
+PAS Math 0.4 alpha
+
+Questa versione di PAS Math puo', in in alcuni
+casi, terminare con un errore di run-time se
+compilata con la direttiva $H+ per le AnsiString.
+Tale problema si verifica ad esempio specificando
+una funzione non valida come primo parametro di
+una funzione VAL, DERIV ed INT.
+
+In questa distribuizione la direttiva $H+ e'
+stata mantenuta e puo' dunque verificarsi il
+problema sopra riportato. La rimozione di tale
+direttiva comporterebbe che espressioni lunghe
+o con molti numeri reali potrebbero non essere
+calcolate correttamente dal programma.

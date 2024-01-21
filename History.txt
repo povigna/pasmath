@@ -1,0 +1,77 @@
+v. 0.06a: Prima versione di PAS Math di
+Michele Povigna, esegue somma e
+sottrazione.
+
+v. 0.1: Lo sviluppo passa a Carmelo Spiccia.
+Correzione errori. Aggiunta gestione di
+divisione, prodotto, elevazione a potenza,
+numeri decimali.
+
+v. 0.2: Corretto problema elevazione a
+potenza. Aggiunto controllo sintassi
+dell'espressione. Aggiunta gestione
+delle priorita' nelle operazioni. Aggiunta
+interfaccia utente.
+
+v. 0.21: Miglioramento nel controllo della
+sintassi dell'espressione. Ottimizzazione
+del codice. Eventuali spazi vengono
+ignorati.
+
+v. 0.22: Correzione errori gravi nella gestione
+del segno + e dei risultati parziali nulli.
+
+v. 0.24 alpha 1: Aggiunta gestione delle
+parentesi.
+
+v. 0.25: Correzione errori.
+
+v. 0.26: Correzione errori (alcuni gravi).
+Corretti difetti di visualizzazione della
+espressione. Aggiunto operatore
+fattoriale.
+
+v. 0.27: Aggiunta gestione del valore
+assoluto. Aggiunti comandi HELP e CLS.
+
+v. 0.28: Aggiunta gestione prodotti
+impliciti. Aggiunta funzione delay.
+Correzione errori.
+
+v. 0.281: Miglioramento dell'interfaccia
+utente, della gestione dei prodotti
+impliciti. Parzialmente risolto il
+problema del calcolo di radici di
+numeri negativi. Aggiunto comando
+COLOR.
+
+v. 0.29 alpha: Aggiunta gestione della
+notazione scientifica.
+
+v. 0.29 beta 1: Corretto errore nel calcolo
+del fattoriale e nella notazione scientifica.
+
+v. 0.29 beta 2: Corretto errore nel controllo
+della sintassi dell'espressione riguardante
+il valore assoluto. Migliorata la procedura
+di inserimento.
+
+v. 0.29 beta 3: Corretto errore nella gestione
+delle priorita' per l'elevazione a potenza.
+
+v. 0.291 alpha: Corretto errore nella gestione
+del segno negativo in notazione scientifica.
+Aggiunta gestione di variabili. Aggiunti
+comandi DEC ed EXIT. Migliorata la
+visualizzazione mediante un filtro eliminante
+segni e zeri superflui.
+
+v. 0.4 alpha: Aggiunto supporto per le funzioni
+e per i gradi sessagesimali. Aggiunto output su file
+in formato testo semplice e MathML (sperimentale).
+Aggiunto operatore percentuale. Migliorata la
+procedura di inserimento. Calcolo fattoriale di
+multipli di 1/2. Potenziato il comando SET.
+Aggiunto il comando RESULTONLY. Aggiunto comando
+per usufruire di una sintassi estesa (sperimentale).
+Migliorato il controllo sull'elevazione a potenza.

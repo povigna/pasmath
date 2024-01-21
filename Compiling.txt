@@ -1,0 +1,23 @@
+Source file Pasm4.pas is compatible with
+Turbo Pascal 7 and Free Pascal compilers.
+Free Pascal with $H+ directive is strongly
+raccomanded.
+
+Pasm.exe obtained by compiling Pasm4.pas
+with Free Pascal Complier 1.0.4 for i386
+(Target OS: GO32 V2 DOS extender).
+Pasm.exe was compressed using UPX v. 1.02
+(see http://upx.tsx.org).
+
+-----------------------------------------
+
+Il file sorgente Pasm4.pas e' compatibile
+con i compilatori Turbo Pascal 7 e Free
+Pascal. Free Pascal con la direttiva $H+
+e' fortemente raccomandato.
+
+Pasm.exe ottenuto compilando Pasm4.pas
+con Free Pascal Compiler 1.0.4 for i386
+(Target OS: GO32 V2 DOS extender).
+Pasm.exe e' stato compresso usando UPX
+v. 1.02 (vedi http://upx.tsx.org).
